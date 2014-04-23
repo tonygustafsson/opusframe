@@ -1,0 +1,95 @@
+body {
+	background: #fafafa;
+	color: #000;
+	width: 80%;
+	margin: 0 auto;
+}
+
+h1 {
+	padding: 1em 0;
+}
+
+table {
+	width: 100%;
+}
+
+a {
+	color: #000;
+}
+
+.right {
+	text-align: right;
+}
+
+#error {
+	background: #D55151;
+	width: 100%;
+	float: left;
+	clear: both;
+	color: #fff;
+	padding: 1em;
+	margin-bottom: 2em;
+}
+
+.form-error {
+	color: #D55151;
+	font-style: italic;
+}
+
+th {
+	text-align: left;
+	background: #f0f0f0;
+}
+
+tr:nth-child(odd) {
+	background: #f3f3f3;
+}
+
+label {
+	display: block;
+	font-weight: bold;
+	padding-top: 1em;
+}
+
+label:after {
+	content: ":";
+}
+
+input[type=text], input[type=email], input[type=url], input[type=password] {
+	width: 400px;
+	padding: .5em;
+}
+
+input[type=radio], input[type=checkbox] {
+	margin-left: 1em;
+}
+
+input[type=number], input[type=date] {
+	width: 200px;
+	padding: .5em;
+}
+
+input[type=submit] {
+	padding: 1em;
+	text-transform: uppercase;
+	display: block;
+	margin-top: 1em;
+}
+
+#form-search {
+	text-align: right;
+}
+
+#form-search input {
+	padding: .5em;
+}
+
+#form-search input[type=submit] {
+	display: inline;
+	margin: 0;
+}
+
+#debug {
+	background: #DBABAB;
+	padding: 1em;
+}
