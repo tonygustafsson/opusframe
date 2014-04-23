@@ -6,7 +6,7 @@
 		function __construct()
 		{
 			$this->site_name = "Movie Database";
-			$this->debug = TRUE;
+			$this->debug = FALSE;
 
 			//Installed modules: database, auth, cache
 			$this->autoload_modules = array(

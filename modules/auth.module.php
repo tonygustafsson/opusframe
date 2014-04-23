@@ -55,6 +55,7 @@
 
 			$this->restricted['movies/index'] = FALSE;
 			$this->restricted['movies/sort'] = FALSE;
+			$this->restricted['movies/search'] = FALSE;
 
 			$is_restricted = $this->is_restricted($this->opus->config->area_name, $this->opus->config->method_name);
 			$this->opus->prevent_controller_load = $is_restricted;
