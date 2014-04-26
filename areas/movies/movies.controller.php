@@ -11,15 +11,15 @@
 		public function index()
 		{
 			$options['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
-			$options['order_by'] = (isset($_SESSION['sort_by_index']) && isset($_SESSION['sort_order_index'])) ? $_SESSION['sort_by_index'] . ' ' . $_SESSION['sort_order_index'] : FALSE;
 
-			if (! empty($this->opus->session->get_flash('search')))
-			{
-				$options['where_like']['name'] = $this->opus->session->get_flash('search');
-			}
+			if (! empty($this->opus->url->get_parameter('sort')) && ! empty($this->opus->url->get_parameter('sort')))
+				$options['order_by'] = $this->opus->url->get_parameter('sort') . ' ' . $this->opus->url->get_parameter('order');
+
+			if (! empty($this->opus->url->get_parameter('search')))
+				$options['where_like']['name'] = $this->opus->url->get_parameter('search');
 
 			$data['movies'] = $this->opus->database->get_result('movies', $options);
-			$data['sort_order_link'] = (isset($_SESSION['sort_order_index']) && strtolower($_SESSION['sort_order_index']) == 'asc') ? 'desc' : 'asc';
+			$data['sort_order_link'] = ($this->opus->url->get_parameter('order') == 'ASC') ? 'DESC' : 'ASC';
 
 			$this->opus->pagination = $this->opus->load->module('pagination');
 			$data['pagination_links'] = $this->opus->pagination->make_links($this->opus->database->db->affected_rows);
@@ -123,24 +123,9 @@
 		public function search()
 		{
 			$filter = $_POST['search'];
-			$this->opus->session->set_flash('search', $filter);
 
-			$this->opus->load->url('movies');
+			$this->opus->load->url('movies/search:' . $filter);
 		}
 
-		public function sort()
-		{
-			$sort_table = $this->opus->config->url_args[0];
-			$sort_by = $this->opus->config->url_args[1];
-			$sort_order = $this->opus->config->url_args[2];
-
-			$sort_order = ($sort_order == 'asc') ? 'ASC' : 'DESC';
-
-			$_SESSION['sort_by_' . $sort_table] = $sort_by;
-			$_SESSION['sort_order_' . $sort_table] = $sort_order;
-
-			$this->opus->load->url('movies/' . $sort_table);
-		}
-		
 	}
 ?>

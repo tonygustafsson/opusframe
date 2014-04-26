@@ -13,7 +13,8 @@
 					'session',
 					'form',
 					'database',
-					'auth'
+					'auth',
+					'url'
 				);
 
 			$this->cache = array(

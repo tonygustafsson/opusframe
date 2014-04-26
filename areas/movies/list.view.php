@@ -5,7 +5,7 @@
 ?>
 
 <form id="form-search" method="post" action="<?=$this->opus->config->base_url('movies/search')?>">
-	<input type="search" name="search" id="search" placeholder="Search for movie">
+	<input type="search" name="search" id="search" value="<?= ((! empty($this->opus->url->get_parameter('search')) ? $this->opus->url->get_parameter('search') : '')) ?>" placeholder="Search for movie">
 	<input type="submit" value="Search">
 </form>
 
@@ -15,12 +15,12 @@
 
 <table>
 	<tr>
-		<th><a href="<?=$this->opus->config->base_url('movies/sort/index/name/' . $sort_order_link)?>">Name</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies/sort/index/genre/' . $sort_order_link)?>">Genre</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies/sort/index/rating/' . $sort_order_link)?>">Rating</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies/sort/index/seen/' . $sort_order_link)?>">Seen</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies/sort/index/media_type/' . $sort_order_link)?>">Media type</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies/sort/index/recommended/' . $sort_order_link)?>">Recommended</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'name', 'order' => $sort_order_link)))?>">Name</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'genre', 'order' => $sort_order_link)))?>">Genre</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'rating', 'order' => $sort_order_link)))?>">Rating</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'seen', 'order' => $sort_order_link)))?>">Seen</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'media_type', 'order' => $sort_order_link)))?>">Media type</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'recommended', 'order' => $sort_order_link)))?>">Recommended</a></th>
 		<th></th>
 	</tr>
 

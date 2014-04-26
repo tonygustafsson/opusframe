@@ -18,7 +18,7 @@
 
 			for ($x = 1; $x < $pages; $x++)
 			{
-				$html .= ' <a href="' . $this->opus->config->base_url . '/' . $this->opus->config->area_name . '/' . $this->opus->config->method_name . '/' . $x . '">' . $x . '</a>';
+				$html .= ' <a href="' . $this->opus->config->base_url('movies' . $this->opus->url->get_url(array('page' => $x))) . '">' . $x . '</a>';
 			}
 
 			return $html;

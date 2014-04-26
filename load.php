@@ -35,20 +35,12 @@
 				
 				if (method_exists($controller, $method_name))
 				{
-					foreach (get_object_vars($this->opus) as $key => $val)
-					{
-						if ( ! isset($this->$key))
-						{
-							$this->$key =& $this->opus->$key;
-						}
-					}
-
 					$controller->$method_name();
 				}
 				else
 				{
-					//Page does not exist
-					load::view('404.sharedview');
+					//Page does not exist, get index instead
+					$controller->index();
 				}
 			}
 			else
