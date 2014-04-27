@@ -16,10 +16,10 @@
 
 			foreach ($segments as $segment)
 			{
-				if (strpos($segment, ':') !== false)
+				if (strpos($segment, '=') !== false)
 				{
 					//It's a URL parameter worth remembering
-					$split_segment = explode(":", $segment);
+					$split_segment = explode('=', $segment);
 					list($segment_key, $segment_value) = $split_segment;
 					$this->parameters[$segment_key] = $segment_value;
 				}
@@ -49,7 +49,7 @@
 
 			foreach ($parameters as $key => $val)
 			{
-				$url_suffix .= '/' . $key . ':' . $val;
+				$url_suffix .= '/' . $key . '=' . $val;
 			}
 
 			return $url_suffix;

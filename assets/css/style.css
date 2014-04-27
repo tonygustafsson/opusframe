@@ -17,6 +17,15 @@ a {
 	color: #000;
 }
 
+#pagination-links {
+	text-align: center;
+	word-spacing: .4em;
+}
+
+#pagination-links a {
+	text-decoration: none;
+}
+
 .right {
 	text-align: right;
 }

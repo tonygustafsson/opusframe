@@ -23,6 +23,7 @@
 			$where = (isset($options['where']) && $options['where'] !== FALSE) ? $this->xss_clean($options['where']) : FALSE;
 			$where_like = (isset($options['where_like']) && $options['where_like'] !== FALSE) ? $this->xss_clean($options['where_like']) : FALSE;
 			$order_by = (isset($options['order_by']) && $options['order_by'] !== FALSE) ? $options['order_by'] : FALSE;
+			$limit = (isset($options['limit_offset']) && isset($options['limit_count'])) ? $options['limit_offset'] . ', ' . $options['limit_count'] : FALSE;
 
 			$sql = 'SELECT ';
 			$x = 0;
@@ -58,6 +59,11 @@
 				$sql .= ' ORDER BY ' . $order_by;
 			}
 
+			if ($limit !== FALSE)
+			{
+				$sql .= ' LIMIT ' . $limit;
+			}
+
 			$result = $this->db->query($sql);
 
 			if (! $result)
@@ -66,6 +72,29 @@
 			}
 			else
 			{
+				if (isset($options['get_total_rows']) && $options['get_total_rows'] === TRUE)
+				{
+					//Also get number of rows for the table, for pagination mostly. Fastest way seems to be a separate query.
+					$total_rows_sql = 'SELECT COUNT(*) AS total_rows FROM ' . $table;
+
+					if ($where !== FALSE)
+					{
+						$total_rows_sql .= ' WHERE ' . key($where) . ' = ';
+						$total_rows_sql .= is_numeric(current($where)) ? current($where) : '"' . current($where) . '"';
+					}
+
+					if ($where_like !== FALSE)
+					{
+						$total_rows_sql .= ' WHERE ' . key($where_like) . ' LIKE ';
+						$total_rows_sql .= '"%' . current($where_like) . '%"';
+					}
+					
+					$total_rows_result = $this->db->query($total_rows_sql);
+					$total_rows_result = mysqli_fetch_object($total_rows_result);
+
+					$result->total_rows = $total_rows_result->total_rows;
+				}
+
 				return $result;
 			}
 		}

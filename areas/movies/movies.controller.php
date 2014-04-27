@@ -11,6 +11,7 @@
 		public function index()
 		{
 			$options['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
+			$options['get_total_rows'] = TRUE;
 
 			if (! empty($this->opus->url->get_parameter('sort')) && ! empty($this->opus->url->get_parameter('sort')))
 				$options['order_by'] = $this->opus->url->get_parameter('sort') . ' ' . $this->opus->url->get_parameter('order');
@@ -18,11 +19,15 @@
 			if (! empty($this->opus->url->get_parameter('search')))
 				$options['where_like']['name'] = $this->opus->url->get_parameter('search');
 
+			$pagination_page = (! empty($this->opus->url->get_parameter('page'))) ? $this->opus->url->get_parameter('page') : 1;
+			$options['limit_count'] = 5;
+			$options['limit_offset'] = ($pagination_page - 1) * $options['limit_count'];
+
 			$data['movies'] = $this->opus->database->get_result('movies', $options);
 			$data['sort_order_link'] = ($this->opus->url->get_parameter('order') == 'ASC') ? 'DESC' : 'ASC';
 
 			$this->opus->pagination = $this->opus->load->module('pagination');
-			$data['pagination_links'] = $this->opus->pagination->make_links($this->opus->database->db->affected_rows);
+			$data['pagination_links'] = $this->opus->pagination->make_links($data['movies']->total_rows);
 
 			load::view('list', $data);
 		}
@@ -124,7 +129,7 @@
 		{
 			$filter = $_POST['search'];
 
-			$this->opus->load->url('movies/search:' . $filter);
+			$this->opus->load->url('movies/search=' . $filter);
 		}
 
 	}

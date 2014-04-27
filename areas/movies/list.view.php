@@ -10,8 +10,7 @@
 </form>
 
 <h2>List movies</h2>
-
-<p><?=$this->opus->database->db->affected_rows?> movies found.</p>
+<p><?=$movies->total_rows?> movies found.</p>
 
 <table>
 	<tr>
@@ -46,7 +45,7 @@
 	?>
 </table>
 
-<p><?=$pagination_links?></p>
+<p id="pagination-links"><?=$pagination_links?></p>
 
 <p>
 	<a href="<?=$this->opus->config->base_url('movies/create')?>">Create new movie</a>

@@ -44,10 +44,10 @@
 
 			$path = str_replace($this->base_path, "", parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH));
 			$path = $this->remove_leading_slash($path);	
-			$path = $this->remove_trailing_slash($path);	
+			$path = $this->remove_trailing_slash($path);
 			$path = ($path == "") ? $this->routes['default'] : $path;
 			$this->path = $path;
-			
+
 			$url_segments = explode("/", $this->path);
 		
 			$router_match = (isset($url_segments[1])) ? $url_segments[0] . '/'  . $url_segments[1] : $url_segments[0];
