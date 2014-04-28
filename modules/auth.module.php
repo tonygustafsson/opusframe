@@ -12,8 +12,11 @@
 			$this->method = "protect_all";
 
 			$this->db_table = "users";
+			$this->db_id_column = "id";
 			$this->db_username_column = "username";
 			$this->db_password_column = "password";
+
+			$this->session_id_field = 'user_session_id';
 			$this->session_ip_field = 'ip';
 			$this->session_username_field = 'username';
 			$this->session_prev_url_field = 'previous_url';
@@ -21,9 +24,9 @@
 			$this->data_model = array(
 				'id' => array(
 					'friendly_name' => 'ID',
-					'type' => 'int',
+					'type' => 'string',
 					'form_name' => 'id',
-					'max_length' => 20
+					'max_length' => 30
 				),
 				'username' => array(
 					'friendly_name' => 'Username',
@@ -43,6 +46,10 @@
 					'form_name' => 'verify_password'
 				)
 			);
+
+			//Set a unique ID that don't changes ever 5 minutes as session_id does.
+			if (! isset($_SESSION[$this->session_id_field]))
+				$_SESSION[$this->session_id_field] = uniqid();
 
 			if (isset($_POST['password']) && isset($_POST['verify_password']))
 			{
@@ -121,10 +128,11 @@
 
 		public function login_post()
 		{
-			$logged_in = $this->check_login($_POST['username'], $_POST['password']);
+			$user_id = $this->check_login($_POST['username'], $_POST['password']);
 
-			if ($logged_in)
+			if ($user_id !== FALSE)
 			{
+				$_SESSION[$this->session_id_field] = $user_id;
 				$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
 				$_SESSION[$this->session_username_field] = $_POST['username'];
 
@@ -157,8 +165,9 @@
 
 			if ($data['errors'] === FALSE)
 			{
-				$_POST['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
-				$insert = array('username', 'password');
+				$_POST[$this->db_id_column] = $_SESSION[$this->session_id_field];
+				$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
+				$insert = array('id', 'username', 'password');
 				$this->opus->database->insert($this->db_table, $insert);
 
 				$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
@@ -192,13 +201,13 @@
 
 		public function check_login($username, $password)
 		{
-			$select = array($this->db_password_column);
+			$select = array($this->db_id_column, $this->db_password_column);
 			$where[$this->db_username_column] = $username;
 			$db_user = $this->opus->database->get_row($this->db_table, $select, $where);
 
 			if (password_verify($password, $db_user[$this->db_password_column]))
 			{
-				return TRUE;
+				return $db_user[$this->db_id_column];
 			}
 			else
 			{

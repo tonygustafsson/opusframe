@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Värd: 127.0.0.1
--- Tid vid skapande: 03 apr 2014 kl 13:53
+-- Tid vid skapande: 28 apr 2014 kl 14:39
 -- Serverversion: 5.6.16
 -- PHP-version: 5.5.9
 
@@ -31,19 +31,30 @@ CREATE TABLE IF NOT EXISTS `movies` (
   `name` varchar(50) NOT NULL,
   `genre` varchar(50) NOT NULL,
   `rating` int(1) NOT NULL,
+  `media_type` varchar(20) NOT NULL,
+  `seen` datetime NOT NULL,
+  `recommended` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=26 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=51 ;
 
 --
 -- Dumpning av Data i tabell `movies`
 --
 
-INSERT INTO `movies` (`id`, `name`, `genre`, `rating`) VALUES
-(18, 'The Hobbit', 'Adventure', 5),
-(19, 'The mask', 'Comedy', 3),
-(21, 'Van Gogh', 'History', 3),
-(22, '300: The movie', 'Action', 4),
-(24, 'Herkules', 'History', 1);
+INSERT INTO `movies` (`id`, `name`, `genre`, `rating`, `media_type`, `seen`, `recommended`) VALUES
+(18, 'The Hobbit', 'Adventure', 5, 'DVD', '2000-01-01 00:00:00', 0),
+(19, 'The mask', 'Comedy', 3, 'DVD', '2000-01-01 00:00:00', 1),
+(21, 'Van Gogh', 'History', 5, '', '0000-00-00 00:00:00', 0),
+(22, '300: The movie', 'Action', 4, 'DVD', '2000-01-01 00:00:00', 1),
+(24, 'Herkules', 'History', 1, '', '0000-00-00 00:00:00', 0),
+(27, 'The Obilisk', 'Adventure', 4, 'DVD', '2000-01-01 00:00:00', 1),
+(32, 'The loveStory', 'Romantik', 5, '', '0000-00-00 00:00:00', 0),
+(34, 'The Testing', 'Action', 4, '', '1970-01-01 00:00:00', 0),
+(36, 'TonyMovie', 'Det', 5, '', '0000-00-00 00:00:00', 0),
+(37, 'Kalle Anka', 'Kakke', 4, '', '2014-04-11 00:00:00', 0),
+(40, 'The mourning', 'SciFi', 5, '', '2014-04-02 00:00:00', 0),
+(48, 'Recommended movie', 'Romance', 3, 'DVD', '2014-04-16 00:00:00', 1),
+(50, 'Kakmovie', 'SciFi', 2, 'DVD', '2014-04-26 00:00:00', 1);
 
 -- --------------------------------------------------------
 
@@ -52,18 +63,15 @@ INSERT INTO `movies` (`id`, `name`, `genre`, `rating`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `users` (
-  `id` int(20) NOT NULL AUTO_INCREMENT,
+  `id` varchar(30) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=17 ;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumpning av Data i tabell `users`
 --
-
-INSERT INTO `users` (`id`, `username`, `password`) VALUES
-(16, 'admin', '$2y$10$HXRReen/RlDLjBxXKumjQeZJPDk.7/brGDWrqWGbXcAsWXV4RIGHW');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

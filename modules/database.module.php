@@ -88,7 +88,7 @@
 						$total_rows_sql .= ' WHERE ' . key($where_like) . ' LIKE ';
 						$total_rows_sql .= '"%' . current($where_like) . '%"';
 					}
-					
+
 					$total_rows_result = $this->db->query($total_rows_sql);
 					$total_rows_result = mysqli_fetch_object($total_rows_result);
 
@@ -147,8 +147,6 @@
 		public function insert($table, $insert)
 		{
 			$insert = $this->xss_clean($insert);
-
-			echo '<pre>'; print_r($_POST);
 
 			$keys = "";
 			$values = "";
