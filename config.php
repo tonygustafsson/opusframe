@@ -53,16 +53,16 @@
 			$router_match = (isset($url_segments[1])) ? $url_segments[0] . '/'  . $url_segments[1] : $url_segments[0];
 			$router_segments = (isset($this->routes[$router_match])) ? explode("/", $this->routes[$router_match]) : FALSE;
 		
-			$area_name = (isset($router_segments[0])) ? $router_segments[0] : $url_segments[0];
+			$area_name = (isset($url_segments[0]) && ! strpos($url_segments[0], '=')) ? $url_segments[0] : $this->routes['default'];
 			
 			if (! $router_segments)
 			{
 				//Not routed
-				$method_name = (isset($url_segments[1])) ? $url_segments[1] : 'index';
+				$method_name = (isset($url_segments[1]) && ! strpos($url_segments[1], '=')) ? $url_segments[1] : 'index';
 			}
 			else
 			{
-				$method_name = (isset($router_segments[1])) ? $router_segments[1] : 'index';
+				$method_name = (isset($router_segments[1]) && ! strpos($router_segments[1], '=')) ? $router_segments[1] : 'index';
 			}
 			
 			$url_args = array_slice($url_segments, 2);
