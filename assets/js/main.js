@@ -2,15 +2,17 @@ document.forms[0].elements[0].focus();
 
 var ranges = document.querySelector('input[type=range]');
 
-ranges.addEventListener('change', function(e) {
-	var rangeId = this.getAttribute('id');
-	var helperId = rangeId + '_helper';
+if (ranges) {
+	ranges.addEventListener('change', function(e) {
+		var rangeId = this.getAttribute('id');
+		var helperId = rangeId + '_helper';
 
-	var range = document.getElementById(rangeId);
-	var helper = document.getElementById(helperId);
+		var range = document.getElementById(rangeId);
+		var helper = document.getElementById(helperId);
 
-	helper.innerHTML = range.value;
-});
+		helper.innerHTML = range.value;
+	});
+}
 
 function ajax(url) {
 	var httpRequest = new XMLHttpRequest();
@@ -33,6 +35,10 @@ function ajax(url) {
 
 	httpRequest.send();
 }
+
+window.addEventListener('popstate', function(e) {
+	ajax(location.pathname);
+});
 
 function getTitle(html) {
 	var regex = new RegExp("(?s)<h2>.+?</h2>");
