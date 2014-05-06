@@ -51,6 +51,8 @@
 			$insert_settings['fields'] = array('name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 			$insert_output = $this->opus->database->insert($insert_settings);
 
+			$movie_id = $insert_output->insert_id;
+
 			if (! isset($insert_output->form_errors))
 			{
 				$this->opus->load->url('movies');
