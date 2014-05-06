@@ -10,20 +10,21 @@
 
 		public function index()
 		{
-			$options['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
-			$options['get_total_rows'] = TRUE;
+			$get_settings['table_name'] = 'movies';
+			$get_settings['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
+			$get_settings['get_total_rows'] = TRUE;
 
 			if (! empty($this->opus->url->get_parameter('sort')) && ! empty($this->opus->url->get_parameter('sort')))
-				$options['order_by'] = $this->opus->url->get_parameter('sort') . ' ' . $this->opus->url->get_parameter('order');
+				$get_settings['order_by'] = $this->opus->url->get_parameter('sort') . ' ' . $this->opus->url->get_parameter('order');
 
 			if (! empty($this->opus->url->get_parameter('search')))
-				$options['where_like']['name'] = $this->opus->url->get_parameter('search');
+				$get_settings['where_like']['name'] = $this->opus->url->get_parameter('search');
 
 			$pagination_page = (! empty($this->opus->url->get_parameter('page'))) ? $this->opus->url->get_parameter('page') : 1;
-			$options['limit_count'] = 5;
-			$options['limit_offset'] = ($pagination_page - 1) * $options['limit_count'];
+			$get_settings['limit_count'] = 5;
+			$get_settings['limit_offset'] = ($pagination_page - 1) * $get_settings['limit_count'];
 
-			$data['movies'] = $this->opus->database->get_result('movies', $options);
+			$data['movies'] = $this->opus->database->get_result($get_settings);
 			$data['sort_order_link'] = ($this->opus->url->get_parameter('order') == 'ASC') ? 'DESC' : 'ASC';
 
 			$this->opus->pagination = $this->opus->load->module('pagination');
@@ -45,18 +46,18 @@
 		
 		public function create_post()
 		{
-			$data['errors'] = $this->opus->form->validate($this->model->data_model);
+			$insert_settings['data_model'] = $this->model->data_model;
+			$insert_settings['table_name'] = 'movies';
+			$insert_settings['fields'] = array('name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
+			$insert_output = $this->opus->database->insert($insert_settings);
 
-			if ($data['errors'] === FALSE)
+			if (! isset($insert_output->form_errors))
 			{
-				$insert = array('name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
-				$this->opus->database->insert('movies', $insert);
-
 				$this->opus->load->url('movies');
 			}
 			else
 			{
-				$this->opus->session->set_flash('form_validation', $data['errors']);
+				$this->opus->session->set_flash('form_validation', $insert_output->form_errors);
 				$this->opus->session->set_flash('form_values', $_POST);
 
 				$this->opus->load->url('movies/create');
@@ -69,15 +70,17 @@
 
 			if (! empty($id))
 			{
-				$select = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
-				$where['id'] = $id;
-				$movie_info = $this->opus->database->get_row('movies', $select, $where);
+				$get_settings['table_name'] = 'movies';
+				$get_settings['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
+				$get_settings['where']['id'] = $id;
+				$movie_info = $this->opus->database->get_row($get_settings);
 
 				$make_settings['wanted_fields'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 				$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 
-				if (! empty ($this->opus->session->get_flash('form_values')))
+				if (! empty($this->opus->session->get_flash('form_values')))
 				{
+					//Show new values upon errors instead of the original values
 					$make_settings['values'] = $this->opus->session->get_flash('form_values');
 				}
 				else
@@ -93,22 +96,22 @@
 
 		public function edit_post()
 		{
-			$data['errors'] = $this->opus->form->validate($this->model->data_model);
+			$update_settings['data_model'] = $this->model->data_model;
+			$update_settings['table_name'] = 'movies';
+			$update_settings['fields'] = array('name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
+			$update_settings['where']['id'] = $_POST['id'];
+			$update_output = $this->opus->database->update($update_settings);
 
-			if ($data['errors'] === FALSE)
+			if (! isset($update_output->form_errors))
 			{
-				$update = array('name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
-				$where['id'] = $_POST['id'];
-				$this->opus->database->update('movies', $update, $where);
-
 				$this->opus->load->url('movies');
 			}
 			else
 			{
-				$this->opus->session->set_flash('form_validation', $data['errors']);
+				$this->opus->session->set_flash('form_validation', $update_output->form_errors);
 				$this->opus->session->set_flash('form_values', $_POST);
 
-				$this->opus->load->url('movies/edit/' . $_POST['id']);
+				$this->opus->load->url('movies/edit/' . $_POST['id']);	
 			}
 		}
 
@@ -118,8 +121,9 @@
 
 			if (! empty($id))
 			{
-				$where['id'] = $id;
-				$this->opus->database->delete('movies', $where);
+				$delete_settings['table_name'] = 'movies';
+				$delete_settings['where']['id'] = $id;
+				$this->opus->database->delete($delete_settings);
 
 				$this->opus->load->url('movies');
 			}

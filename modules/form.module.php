@@ -162,9 +162,9 @@
 			return date('Y-m-d', $timestamp);
 		}
 
-		function validate($fields)
+		function validate($data_model)
 		{
-			foreach ($fields as $field)
+			foreach ($data_model as $field)
 			{
 				if (isset($_POST[$field['form_name']]))
 				{
@@ -249,10 +249,10 @@
 							$error[$field['form_name']][] = $field['friendly_name'] . ' must be any of the following values: ' . implode(', ', $field['fixed_values']) . '.';
 						}
 					}
-				}
+				}	
 			}
 
-			return (isset($error)) ? $error : FALSE;
+			return (isset($error)) ? $error : NULL;
 		}
 
 	}

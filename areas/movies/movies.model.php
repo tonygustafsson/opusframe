@@ -6,6 +6,7 @@
 		public function __construct()
 		{
 
+			//Settings for the data, both on the database side and html form side
 			$this->data_model = array(
 				'id' => array(
 					'friendly_name' => 'ID',

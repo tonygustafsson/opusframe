@@ -143,6 +143,11 @@
 			header('Location: ' . $url);
 		}
 
+		public function is_module_loaded($module)
+		{
+			return (isset($this->opus->$module)) ? TRUE : FALSE;
+		}
+
 		public function is_ajax_request()
 		{
 			return (! empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');

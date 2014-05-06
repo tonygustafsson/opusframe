@@ -12,18 +12,16 @@
 								);
 
 			if ($this->db->connect_errno > 0)
-			{
 			    die('Unable to connect to database [' . $this->db->connect_error . ']');
-			}
 		}
 
-		public function get_result($table, $options)
+		public function get_result($get_settings)
 		{
-			$select = $this->xss_clean($options['select']);
-			$where = (isset($options['where']) && $options['where'] !== FALSE) ? $this->xss_clean($options['where']) : FALSE;
-			$where_like = (isset($options['where_like']) && $options['where_like'] !== FALSE) ? $this->xss_clean($options['where_like']) : FALSE;
-			$order_by = (isset($options['order_by']) && $options['order_by'] !== FALSE) ? $options['order_by'] : FALSE;
-			$limit = (isset($options['limit_offset']) && isset($options['limit_count'])) ? $options['limit_offset'] . ', ' . $options['limit_count'] : FALSE;
+			$select = $this->xss_clean($get_settings['select']);
+			$where = (isset($get_settings['where']) && $get_settings['where'] !== FALSE) ? $this->xss_clean($get_settings['where']) : FALSE;
+			$where_like = (isset($get_settings['where_like']) && $get_settings['where_like'] !== FALSE) ? $this->xss_clean($get_settings['where_like']) : FALSE;
+			$order_by = (isset($get_settings['order_by']) && $get_settings['order_by'] !== FALSE) ? $get_settings['order_by'] : FALSE;
+			$limit = (isset($get_settings['limit_offset']) && isset($get_settings['limit_count'])) ? $get_settings['limit_offset'] . ', ' . $get_settings['limit_count'] : FALSE;
 
 			$sql = 'SELECT ';
 			$x = 0;
@@ -40,7 +38,7 @@
 				$x++;
 			}
 
-			$sql .= ' FROM ' . $table;
+			$sql .= ' FROM ' . $get_settings['table_name'];
 
 			if ($where !== FALSE)
 			{
@@ -72,10 +70,10 @@
 			}
 			else
 			{
-				if (isset($options['get_total_rows']) && $options['get_total_rows'] === TRUE)
+				if (isset($get_settings['get_total_rows']) && $get_settings['get_total_rows'] === TRUE)
 				{
 					//Also get number of rows for the table, for pagination mostly. Fastest way seems to be a separate query.
-					$total_rows_sql = 'SELECT COUNT(*) AS total_rows FROM ' . $table;
+					$total_rows_sql = 'SELECT COUNT(*) AS total_rows FROM ' . $get_settings['table_name'];
 
 					if ($where !== FALSE)
 					{
@@ -99,19 +97,19 @@
 			}
 		}
 
-		public function get_row($table, $select, $where)
+		public function get_row($get_settings)
 		{
-			$select = $this->xss_clean($select);
-			$where = $this->xss_clean($where);
+			$get_settings['select'] = $this->xss_clean($get_settings['select']);
+			$get_settings['where'] = $this->xss_clean($get_settings['where']);
 
 			$sql = 'SELECT ';
 			$x = 0;
 
-			foreach ($select as $column)
+			foreach ($get_settings['select'] as $column)
 			{
 				$sql .= $column;
 
-				if ($x < count($select) - 1)
+				if ($x < count($get_settings['select']) - 1)
 				{
 					$sql .= ', ';
 				}
@@ -119,21 +117,17 @@
 				$x++;
 			}
 
-			$sql .= ' FROM ' . $table;
-			$sql .= ' WHERE ' . key($where) . ' = ';
-			$sql .= is_numeric(current($where)) ? current($where) : '"' . current($where) . '"';
+			$sql .= ' FROM ' . $get_settings['table_name'];
+			$sql .= ' WHERE ' . key($get_settings['where']) . ' = ';
+			$sql .= is_numeric(current($get_settings['where'])) ? current($get_settings['where']) : '"' . current($get_settings['where']) . '"';
 			$sql .= " LIMIT 1";
 
 			$result = $this->db->query($sql);
 
 			if (! $result)
-			{
 			    die('Database error: '. $this->db->error);
-			}
-			else
-			{
-				return $result->fetch_assoc();
-			}
+
+			return $result->fetch_assoc();
 		}
 
 		public function query($query)
@@ -144,102 +138,119 @@
 			}
 		}
 
-		public function insert($table, $insert)
+		public function insert($insert_settings)
 		{
-			$insert = $this->xss_clean($insert);
+			//Clean the input from dangerous data
+			$_POST = $this->xss_clean($_POST);
 
-			$keys = "";
-			$values = "";
-			$x = 0;
-
-			foreach ($insert as $column)
+			if ($this->opus->load->is_module_loaded('form'))
 			{
-				if (isset($_POST[$column]))
-				{
-					$keys .= $column;
-					$values .= (is_numeric($_POST[$column])) ? $_POST[$column] : '"' . $_POST[$column] . '"';
+				//Validate the input and add errors to list
+				$this->db->form_errors = $this->opus->form->validate($insert_settings['data_model']);
+			}
 
-					if ($x < count($insert) - 1)
+			if (! isset($this->db->form_errors))
+			{
+				$keys = "";
+				$values = "";
+				$x = 1;
+
+				foreach ($insert_settings['data_model'] as $column_name => $column_settings)
+				{
+					if (in_array($column_settings['form_name'], $insert_settings['fields']) && isset($_POST[$column_settings['form_name']]))
 					{
-						$keys .= ", ";
-						$values .= ", ";
+						$keys .= $column_name;
+						$values .= (is_numeric($_POST[$column_name])) ? $_POST[$column_name] : '"' . $_POST[$column_name] . '"';
+
+						if ($x < count($insert_settings['fields']))
+						{
+							$keys .= ", ";
+							$values .= ", ";
+						}
+
+						$x++;
 					}
+
+
 				}
 
-				$x++;
+				if (isset($insert_settings['table_name']) && ! empty($keys) && ! empty($values))
+				{
+					$sql = 'INSERT INTO ' . $insert_settings['table_name'] . ' (' . $keys . ') VALUES (' . $values . ');';
+					$result = $this->db->query($sql);
+
+					if (! $result)
+					    die('Database error: '. $this->db->error);
+				}
 			}
 
-			$sql = 'INSERT INTO ' . $table . ' (' . $keys . ') VALUES (' . $values . ');';
-			$result = $this->db->query($sql);
-
-			if (! $result)
-			{
-			    die('Database error: '. $this->db->error);
-			}
-			else
-			{
-				return $this->db;
-			}
+			return $this->db;
 		}
 
-		public function update($table, $update, $where)
+		public function update($update_settings)
 		{
-			$update = $this->xss_clean($update);
-			$where = $this->xss_clean($where);
+			//Clean the input from dangerous data
+			$_POST = $this->xss_clean($_POST);
 
-			$changes = "";
-			$x = 0;
-
-			foreach ($update as $column)
+			if ($this->opus->load->is_module_loaded('form'))
 			{
-				if (isset($_POST[$column]))
-				{
-					$changes .= $column . ' = ';
-					$changes .= (is_numeric($_POST[$column])) ? $_POST[$column] : '"' . $_POST[$column] . '"';
+				//Validate the input and add errors to list
+				$this->db->form_errors = $this->opus->form->validate($update_settings['data_model']);
+			}
 
-					if ($x < count($update) - 1)
+			if (! isset($this->db->form_errors))
+			{
+				$changes = "";
+				$x = 0;
+
+				foreach ($update_settings['fields'] as $column)
+				{
+					if (isset($_POST[$column]))
 					{
-						$changes .= ", ";
+						$changes .= $column . ' = ';
+						$changes .= (is_numeric($_POST[$column])) ? $_POST[$column] : '"' . $_POST[$column] . '"';
+
+						if ($x < count($update_settings['fields']) - 1)
+						{
+							$changes .= ", ";
+						}
 					}
+
+					$x++;
 				}
 
-				$x++;
+				if (isset($update_settings['table_name']) && ! empty($changes))
+				{
+					$sql = 'UPDATE ' . $update_settings['table_name'] . ' SET ' . $changes;
+					$sql .= ' WHERE ' . key($update_settings['where']) . ' = ';
+					$sql .= is_numeric(current($update_settings['where'])) ? current($update_settings['where']) : '"' . current($update_settings['where']) . '"';
+
+					$result = $this->db->query($sql);
+
+					if (! $result)
+					    die('Database error: '. $this->db->error);
+
+				}
 			}
 
-			$sql = 'UPDATE ' . $table . ' SET ' . $changes;
-			$sql .= ' WHERE ' . key($where) . ' = ';
-			$sql .= is_numeric(current($where)) ? current($where) : '"' . current($where) . '"';
-
-			$result = $this->db->query($sql);
-
-			if (! $result)
-			{
-			    die('Database error: '. $this->db->error);
-			}
-			else
-			{
-				return $this->db;
-			}
+			return $this->db;
 		}
 
-		public function delete($table, $where)
+		public function delete($delete_settings)
 		{
-			$where = $this->xss_clean($where);
+			//Clean the input from dangerous data
+			$_POST = $this->xss_clean($_POST);
 			
-			$sql = "DELETE FROM " . $table;
-			$sql .= ' WHERE ' . key($where) . ' = ';
-			$sql .= is_numeric(current($where)) ? current($where) : '"' . current($where) . '"';
+			$sql = "DELETE FROM " . $delete_settings['table_name'];
+			$sql .= ' WHERE ' . key($delete_settings['where']) . ' = ';
+			$sql .= is_numeric(current($delete_settings['where'])) ? current($delete_settings['where']) : '"' . current($delete_settings['where']) . '"';
 
 			$result = $this->db->query($sql);
 
 			if (! $result)
-			{
-			    die('Database error: '. $this->db->error);
-			}
-			else
-			{
-				return $this->db;
-			}
+				die('Database error: '. $this->db->error);
+				
+			return $this->db;
 		}
 
 		private function xss_clean($input)

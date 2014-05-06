@@ -161,15 +161,30 @@
 
 		public function register_post()
 		{
-			$data['errors'] = $this->opus->form->validate($this->data_model);
-
-			if ($data['errors'] === FALSE)
+			$_POST[$this->db_id_column] = $_SESSION[$this->session_id_field];
+			$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
+			
+			if ($this->is_registered($_POST[$this->db_username_column]))
 			{
-				$_POST[$this->db_id_column] = $_SESSION[$this->session_id_field];
-				$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
-				$insert = array('id', 'username', 'password');
-				$this->opus->database->insert($this->db_table, $insert);
+				//User already exists
+				$form_validation = array('username' => array(0 => 'This username is already taken.'));
+			}
 
+			$insert_settings['table_name'] = $this->db_table;
+			$insert_settings['data_model'] = $this->data_model;
+			$insert_settings['fields'] = array('id', 'username', 'password');
+			$insert_output = $this->opus->database->insert($insert_settings);
+
+			//Merge duplicate user check error with the form validation if there is any.
+			if (isset($insert_output->form_errors) && isset($form_validation))
+				$insert_output->form_errors = array_merge($insert_output->form_errors, $form_validation);
+			elseif (! isset($insert_output->form_errors) && isset($form_validation))
+				$insert_output->form_errors = $form_validation;
+
+			$form_validation = (isset($insert_output->form_errors)) ? array_merge($insert_output->form_errors, $form_validation) : $insert_output->form_errors;
+
+			if (! isset($insert_output->form_errors))
+			{
 				$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
 				$_SESSION[$this->session_username_field] = $_POST['username'];
 
@@ -177,7 +192,7 @@
 			}
 			else
 			{
-				$this->opus->session->set_flash('form_validation', $data['errors']);
+				$this->opus->session->set_flash('form_validation', $insert_output->form_errors);
 				$this->opus->session->set_flash('form_values', $_POST);
 
 				$this->opus->load->url($this->module_path . '/register');
@@ -192,27 +207,25 @@
 
 		public function is_registered($username)
 		{
-			$select = array($this->db_username_column);
-			$where[$this->db_username_column] = $username;
-			$db_user = $this->opus->database->get_row($this->db_table, $select, $where);
+			$get_settings['table_name'] = $this->db_table;
+			$get_settings['select'] = array($this->db_username_column);
+			$get_settings['where'][$this->db_username_column] = $username;
+			$db_user = $this->opus->database->get_row($get_settings);
 
 			return (count($db_user) > 0) ? TRUE : FALSE;
 		}
 
 		public function check_login($username, $password)
 		{
-			$select = array($this->db_id_column, $this->db_password_column);
-			$where[$this->db_username_column] = $username;
-			$db_user = $this->opus->database->get_row($this->db_table, $select, $where);
+			$get_settings['table_name'] = $this->db_table;
+			$get_settings['select'] = array($this->db_id_column, $this->db_password_column);
+			$get_settings['where'][$this->db_username_column] = $username;
+			$db_user = $this->opus->database->get_row($get_settings);
 
 			if (password_verify($password, $db_user[$this->db_password_column]))
-			{
 				return $db_user[$this->db_id_column];
-			}
 			else
-			{
 				return FALSE;
-			}
 		}
 
 	}
