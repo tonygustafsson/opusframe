@@ -169,11 +169,13 @@
 				//User already exists
 				$form_validation = array('username' => array(0 => 'This username is already taken.'));
 			}
-
-			$insert_settings['table_name'] = $this->db_table;
-			$insert_settings['data_model'] = $this->data_model;
-			$insert_settings['fields'] = array('id', 'username', 'password');
-			$insert_output = $this->opus->database->insert($insert_settings);
+			else
+			{
+				$insert_settings['table_name'] = $this->db_table;
+				$insert_settings['data_model'] = $this->data_model;
+				$insert_settings['fields'] = array('id', 'username', 'password');
+				$insert_output = $this->opus->database->insert($insert_settings);
+			}
 
 			//Merge duplicate user check error with the form validation if there is any.
 			if (isset($insert_output->form_errors) && isset($form_validation))
