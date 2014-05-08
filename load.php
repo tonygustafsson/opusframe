@@ -143,6 +143,19 @@
 			header('Location: ' . $url);
 		}
 
+		public function require_modules($modules)
+		{
+			foreach ($modules as $module)
+			{
+				if (! $this->is_module_loaded($module))
+				{
+					$callers = debug_backtrace();
+					echo 'The module "' . $module . '" is required for using "' . $callers[1]['class'] . '".';
+					exit;
+				}
+			}
+		}
+
 		public function is_module_loaded($module)
 		{
 			return (isset($this->opus->$module)) ? TRUE : FALSE;

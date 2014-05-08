@@ -5,6 +5,8 @@
 		{
 			$this->opus =& opus::$instance;
 
+			$this->opus->load->require_modules(array('form'));
+
 			$this->db = new mysqli( $this->opus->config->database['host'],
 									$this->opus->config->database['username'],
 									$this->opus->config->database['password'],

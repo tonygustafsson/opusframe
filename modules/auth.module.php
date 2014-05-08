@@ -6,6 +6,8 @@
 		{	
 			$this->opus =& opus::$instance;
 
+			$this->opus->load->require_modules(array('session', 'form', 'database'));
+
 			if (! session_id()) { session_start(); }
 
 			/* protect_all or protect_none, sets the default, can also be changed per controller method */
