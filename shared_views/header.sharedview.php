@@ -13,9 +13,9 @@
 	?>
 
 	<?php
-		if (isset($this->opus->auth->is_logged_in) && $this->opus->auth->is_logged_in !== FALSE)
+		if (isset($this->opus->auth->user['logged_in']) && $this->opus->auth->user['logged_in'] === TRUE)
 		{
-			echo '<p class="right"><a href="' . $this->opus->config->base_url('auth/logout') . '">Log out, ' . $_SESSION[$this->opus->auth->session_username_field] . '</a></p>';
+			echo '<p class="right"><a href="' . $this->opus->config->base_url('auth/logout') . '">Log out, ' . $this->opus->auth->get_first_name() . '</a></p>';
 		}
 		else
 		{

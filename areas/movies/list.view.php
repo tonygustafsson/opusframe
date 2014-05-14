@@ -33,7 +33,7 @@
 				echo '<td>' . date('Y-m-d', strtotime($movie->seen)) . '</td>';
 				echo '<td>' . $movie->media_type . '</td>';
 				echo '<td>' . (($movie->recommended == 1) ? 'Yes' : 'No') . '</td>';
-				if ($this->opus->auth->is_logged_in)
+				if ($this->opus->auth->user['logged_in'] === TRUE)
 				{
 					echo '	<td>
 								<a href="' . $this->opus->config->base_url('movies/edit/' . $movie->id) . '">Edit</a>
