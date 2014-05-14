@@ -262,7 +262,7 @@
 			foreach ($input as $key => $val)
 			{
 				$val = mysql_real_escape_string($val);
-				$val = htmlspecialchars($val);
+				$val = htmlspecialchars($val, ENT_SUBSTITUTE, "ISO8859-1");
 
 				$output[$key] = $val;
 			}
