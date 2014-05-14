@@ -141,6 +141,7 @@
 			$url = ($url == "/") ? "" : $url;
 			$url = $this->opus->config->base_url($url);
 			header('Location: ' . $url);
+			exit;
 		}
 
 		public function require_modules($modules)
