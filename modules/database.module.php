@@ -7,6 +7,8 @@
 
 			$this->opus->load->require_modules(array('form'));
 
+			$this->xss_encoding = "ISO8859-1";
+
 			$this->db = new mysqli( $this->opus->config->database['host'],
 									$this->opus->config->database['username'],
 									$this->opus->config->database['password'],
@@ -262,7 +264,7 @@
 			foreach ($input as $key => $val)
 			{
 				$val = mysql_real_escape_string($val);
-				$val = htmlspecialchars($val, ENT_SUBSTITUTE, "ISO8859-1");
+				$val = htmlspecialchars($val, ENT_SUBSTITUTE, $this->xss_encoding);
 
 				$output[$key] = $val;
 			}
