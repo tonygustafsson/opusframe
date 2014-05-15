@@ -6,6 +6,7 @@
 		function __construct()
 		{
 			$this->site_name = "Movie Database";
+			$this->site_email = "movie.database@gmail.com";
 			$this->debug = FALSE;
 
 			//Installed modules: database, auth, cache

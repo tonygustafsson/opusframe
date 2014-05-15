@@ -17,6 +17,11 @@
 			$this->charset			= "utf-8";
 			$this->required_args	= array('to_email', 'to_name', 'subject', 'body', 'from_name', 'from_email', 'subject', 'body');
 
+			//These can be overwritten with input parameters
+			$this->from_name = $this->opus->config->site_name;
+			$this->from_email = $this->opus->config->site_email;
+			$this->html_format = TRUE;
+
 			$this->smtp_codes['service_ready'] = 220;
 			$this->smtp_codes['command_successfull'] = 250;
 			$this->smtp_codes['unknown_command'] = 500;
@@ -39,6 +44,10 @@
 
 		public function send($args)
 		{
+			$args['from_name'] = (isset($args['from_name'])) ? $args['from_name'] : $this->from_name;
+			$args['from_email'] = (isset($args['from_email'])) ? $args['from_email'] : $this->from_email;
+			$args['html_format'] = (isset($args['html_format'])) ? $args['html_format'] : $this->html_format;
+
 			//Check if required arguments are available
 			foreach ($this->required_args as $required_arg)
 			{
@@ -95,6 +104,8 @@
 			$this->send_command($args['body']);
 			$this->send_command("."); //Queue the mail for delivery
 			$this->send_command("quit", $this->smtp_codes['command_successfull']);
+
+			return TRUE;
 		}
 
 		private function send_command($command, $wanted_response_code = FALSE)
