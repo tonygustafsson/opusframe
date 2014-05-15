@@ -190,13 +190,44 @@
 
 		public function forgot_password()
 		{
-			$make_settings['wanted_fields'] =  array('username', 'password', 'verify_password');
+			$make_settings['wanted_fields'] =  array('username');
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
 			$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
 
-			load::view('register.sharedview', $data);
+			load::view('forgot_password.sharedview', $data);
+		}
+
+		public function forgot_password_post()
+		{
+			if (! $this->is_registered($_POST[$this->db_username_column]))
+			{
+				//User already exists
+				$form_errors = array('username' => array(0 => 'This user is not registered.'));
+
+				$this->opus->session->set_flash('form_validation', $form_errors);
+				$this->opus->session->set_flash('form_values', $_POST);
+
+				$this->opus->load->url($this->module_path . '/forgot_password');
+			}
+
+			//Get the user
+			$user = $this->get_user($_POST[$this->db_username_column], $by_pass_session_controll = TRUE);
+
+			//Send mail
+			$this->opus->email = $this->opus->load->module('email');
+			$mail_args['to_name'] = $user['real_name'];
+			$mail_args['to_email'] = $user['username'];
+			$mail_args['subject'] = "Forgotten password";
+			$mail_args['body'] = "Detta är ett <strong>mail</strong> ju. Läs!";
+			
+			if ($this->opus->email->send($mail_args))
+				$this->opus->session->set_flash('success', 'Your password has been emailed to ' . $_POST[$this->db_username_column] . '.');
+			else
+				$this->opus->session->set_flash('error', 'Something went wrong when trying to email you.');
+
+			$this->opus->load->url($this->module_path . '/login');
 		}
 
 		public function logout()

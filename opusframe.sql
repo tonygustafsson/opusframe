@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Värd: 127.0.0.1
--- Tid vid skapande: 28 apr 2014 kl 14:39
+-- Tid vid skapande: 15 maj 2014 kl 14:40
 -- Serverversion: 5.6.16
 -- PHP-version: 5.5.9
 
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `movies` (
   `seen` datetime NOT NULL,
   `recommended` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=51 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=67 ;
 
 --
 -- Dumpning av Data i tabell `movies`
@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS `movies` (
 
 INSERT INTO `movies` (`id`, `name`, `genre`, `rating`, `media_type`, `seen`, `recommended`) VALUES
 (18, 'The Hobbit', 'Adventure', 5, 'DVD', '2000-01-01 00:00:00', 0),
-(19, 'The mask', 'Comedy', 3, 'DVD', '2000-01-01 00:00:00', 1),
 (21, 'Van Gogh', 'History', 5, '', '0000-00-00 00:00:00', 0),
 (22, '300: The movie', 'Action', 4, 'DVD', '2000-01-01 00:00:00', 1),
 (24, 'Herkules', 'History', 1, '', '0000-00-00 00:00:00', 0),
@@ -53,8 +52,10 @@ INSERT INTO `movies` (`id`, `name`, `genre`, `rating`, `media_type`, `seen`, `re
 (36, 'TonyMovie', 'Det', 5, '', '0000-00-00 00:00:00', 0),
 (37, 'Kalle Anka', 'Kakke', 4, '', '2014-04-11 00:00:00', 0),
 (40, 'The mourning', 'SciFi', 5, '', '2014-04-02 00:00:00', 0),
-(48, 'Recommended movie', 'Romance', 3, 'DVD', '2014-04-16 00:00:00', 1),
-(50, 'Kakmovie', 'SciFi', 2, 'DVD', '2014-04-26 00:00:00', 1);
+(50, 'Kakmovie', 'SciFi', 2, 'DVD', '2014-04-26 00:00:00', 1),
+(51, 'KalleAnka &amp;amp; CO', 'Romance', 2, 'DVD', '2014-05-02 00:00:00', 0),
+(65, 'The turna', 'Romance', 3, 'DVD', '2014-05-06 00:00:00', 0),
+(66, 'The Grinding', 'Romance', 2, 'DVD', '2014-05-06 00:00:00', 0);
 
 -- --------------------------------------------------------
 
@@ -64,8 +65,10 @@ INSERT INTO `movies` (`id`, `name`, `genre`, `rating`, `media_type`, `seen`, `re
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` varchar(30) NOT NULL,
-  `username` varchar(50) NOT NULL,
+  `username` varchar(150) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `real_name` varchar(150) NOT NULL,
+  `activated` int(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
