@@ -40,6 +40,16 @@ a {
 	margin-bottom: 2em;
 }
 
+#success {
+	background: #4BAF37;
+	width: 100%;
+	float: left;
+	clear: both;
+	color: #fff;
+	padding: 1em;
+	margin-bottom: 2em;
+}
+
 .form-error {
 	color: #D55151;
 	font-style: italic;
