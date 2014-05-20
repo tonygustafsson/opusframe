@@ -39,10 +39,19 @@
 
 					if ($field['type'] == 'string')
 					{
-						$html .= '
-							<label for="' . $field['form_name'] . '">' . $field['friendly_name'] . '</label>
-							<input type="text" name="' . $field['form_name'] . '" id="' . $field['form_name'] . '" value="' . $value . '">
-						';
+						if (isset($field['hidden']) && $field['hidden'] === TRUE)
+						{
+							$html .= '
+								<input type="hidden" name="' . $field['form_name'] . '" id="' . $field['form_name'] . '" value="' . $value . '">
+							';
+						}
+						else
+						{
+							$html .= '
+								<label for="' . $field['form_name'] . '">' . $field['friendly_name'] . '</label>
+								<input type="text" name="' . $field['form_name'] . '" id="' . $field['form_name'] . '" value="' . $value . '">
+							';
+						}
 					}
 
 					if ($field['type'] == 'int')
