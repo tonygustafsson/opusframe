@@ -7,11 +7,6 @@
 			$this->opus =& opus::$instance;
 		}
 
-		public static function walla()
-		{
-			echo 'walla';
-		}
-
 		public function auto_load()
 		{
 			foreach ($this->opus->config->autoload_modules as $module)
