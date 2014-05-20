@@ -6,7 +6,7 @@
 		{	
 			$this->opus =& opus::$instance;
 
-			$this->smtp_host		= "mail.localhost";
+			$this->smtp_host		= "localhost";
 			$this->smtp_port		= 25; //25 for SMTP, 587 for SMTP through SSL
 			$this->smtp_auth		= FALSE;
 			$this->smtp_user		= "";

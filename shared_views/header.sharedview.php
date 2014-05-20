@@ -6,6 +6,10 @@
 
 <body>
 	<?php
+		if (! empty($this->opus->session->get_flash('success')))
+		{
+			echo '<div id="success">' . $this->opus->session->get_flash('success') . '</div>';
+		}
 		if (! empty($this->opus->session->get_flash('error')))
 		{
 			echo '<div id="error">' . $this->opus->session->get_flash('error') . '</div>';

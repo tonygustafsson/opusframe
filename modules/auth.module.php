@@ -19,6 +19,7 @@
 			$this->db_username_column = "username";
 			$this->db_password_column = "password";
 			$this->db_real_name_column = "real_name";
+			$this->db_reset_password_column = "reset_password";
 
 			$this->session_id_field = 'user_session_id';
 			$this->session_ip_field = 'ip';
@@ -55,6 +56,13 @@
 					'friendly_name' => 'Verify password',
 					'type' => 'password',
 					'form_name' => 'verify_password'
+				),
+				'reset_password' => array(
+					'friendly_name' => 'Reset password',
+					'type' => 'string',
+					'form_name' => 'reset_password',
+					'max_length' => 50,
+					'hidden' => TRUE
 				)
 			);
 
@@ -69,7 +77,13 @@
 
 			$this->module_path = 'auth';
 
-			$this->user = (isset($_SESSION[$this->session_username_field])) ? $this->get_user($_SESSION[$this->session_username_field]) : NULL;
+			if (isset($_SESSION[$this->session_username_field]))
+			{
+				$get_parameter['username'] = $_SESSION[$this->session_username_field];
+				$this->user = $this->get_user($get_parameter);
+			}
+			else
+				$this->user = NULL;
 
 			if (isset($_SESSION[$this->session_ip_field]) && $_SESSION[$this->session_ip_field] !== $_SERVER['REMOTE_ADDR'])
 				$this->logout(); //If the user has changed IP, log out the user
@@ -116,7 +130,8 @@
 
 		public function login_post()
 		{
-			$user = $this->get_user($_POST['username'], $by_pass_session_controll = TRUE);
+			$get_parameter['username'] = $_POST['username'];
+			$user = $this->get_user($get_parameter, $by_pass_session_controll = TRUE);
 
 			if (! isset($user) || ! password_verify($_POST['password'], $user[$this->db_password_column]))
 			{
@@ -213,21 +228,88 @@
 			}
 
 			//Get the user
-			$user = $this->get_user($_POST[$this->db_username_column], $by_pass_session_controll = TRUE);
+			$get_parameter['username'] = $_POST[$this->db_username_column];
+			$user = $this->get_user($get_parameter, $by_pass_session_controll = TRUE);
+
+			//Get a reset token
+			$reset_password_token = uniqid();
+			$reset_password_url = $this->opus->config->base_url('/auth/reset_password/' . $reset_password_token);
+			$_POST['reset_password'] = $reset_password_token;
+
+			//Write token to database
+			$update_settings['data_model'] = $this->data_model;
+			$update_settings['table_name'] = $this->db_table;
+			$update_settings['fields'] = array('reset_password');
+			$update_settings['where']['id'] = $user['id'];
+			$update_output = $this->opus->database->update($update_settings);
 
 			//Send mail
 			$this->opus->email = $this->opus->load->module('email');
 			$mail_args['to_name'] = $user['real_name'];
 			$mail_args['to_email'] = $user['username'];
 			$mail_args['subject'] = "Forgotten password";
-			$mail_args['body'] = "Detta är ett <strong>mail</strong> ju. Läs!";
+			$mail_args['body'] = "You can reset your password by visiting this link: " . $reset_password_url . "\r\n";
 			
 			if ($this->opus->email->send($mail_args))
-				$this->opus->session->set_flash('success', 'Your password has been emailed to ' . $_POST[$this->db_username_column] . '.');
+				$this->opus->session->set_flash('success', 'A password reset mail has been sent to ' . $_POST[$this->db_username_column] . '.');
 			else
 				$this->opus->session->set_flash('error', 'Something went wrong when trying to email you.');
 
 			$this->opus->load->url($this->module_path . '/login');
+		}
+
+		public function reset_password()
+		{
+			$get_parameter['reset_password'] = $this->opus->config->url_args[0];
+			$user = $this->get_user($get_parameter, $by_pass_session_controll = TRUE);
+
+			if (isset($user))
+			{
+				$make_settings['wanted_fields'] =  array('reset_password', 'password', 'verify_password');
+				$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
+				$make_settings['values']['reset_password'] = $this->opus->config->url_args[0];
+
+				$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
+
+				load::view('reset_password.sharedview', $data);
+			}
+			else
+			{
+				$this->opus->session->set_flash('error', 'Something is not right with your password reset link.');
+				$this->opus->load->url($this->module_path . '/forgot_password/');
+			}
+		}
+
+		public function reset_password_post()
+		{
+			$get_parameters['reset_password'] = $_POST['reset_password'];
+			$user = $this->get_user($get_parameters, $by_pass_session_controll = TRUE);
+
+			if (! isset($user))
+			{
+				$this->opus->session->set_flash('error', 'Something is not right with your password reset link.');
+				$this->opus->load->url($this->module_path . '/forgot_password/');
+			}
+
+			$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
+			$_POST['reset_password'] = "";
+			
+			$update_settings['table_name'] = $this->db_table;
+			$update_settings['data_model'] = $this->data_model;
+			$update_settings['fields'] = array('password', 'reset_password');
+			$update_settings['where']['reset_password'] = $user['reset_password'];
+			$update_output = $this->opus->database->update($update_settings);
+
+			if (isset($update_output->form_errors))
+			{
+				$this->opus->session->set_flash('form_validation', $update_output->form_errors);
+				$this->opus->session->set_flash('form_values', $_POST);
+
+				$this->opus->load->url($this->module_path . '/reset_password/' . $user['reset_password']);
+			}
+
+			$this->opus->session->set_flash('success', 'You have successfully changed password.');
+			$this->opus->load->url($this->module_path . '/login/');
 		}
 
 		public function logout()
@@ -236,11 +318,16 @@
 			$this->opus->load->url('/');
 		}
 
-		public function get_user($username, $by_pass_session_controll = FALSE)
+		public function get_user($get_parameter, $by_pass_session_controll = FALSE)
 		{
 			$get_settings['table_name'] = $this->db_table;
-			$get_settings['select'] = array($this->db_id_column, $this->db_username_column, $this->db_real_name_column, $this->db_password_column);
-			$get_settings['where'][$this->db_username_column] = $username;
+			$get_settings['select'] = array($this->db_id_column, $this->db_username_column, $this->db_real_name_column, $this->db_password_column, $this->db_reset_password_column);
+
+			if (array_key_exists('username', $get_parameter))
+				$get_settings['where'][$this->db_username_column] = $get_parameter['username'];
+			else if (array_key_exists('reset_password', $get_parameter))
+				$get_settings['where'][$this->db_reset_password_column] = $get_parameter['reset_password'];
+			
 			$db_user = $this->opus->database->get_row($get_settings);
 
 			//If user does not exists in database

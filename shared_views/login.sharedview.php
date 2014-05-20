@@ -6,17 +6,6 @@
 
 <h2>Log in</h2>
 
-<?php
-	if (! empty($this->opus->session->get_flash('success')))
-	{
-		echo '<div id="success">' . $this->opus->session->get_flash('success') . '</div>';
-	}
-	if (! empty($this->opus->session->get_flash('error')))
-	{
-		echo '<div id="error">' . $this->opus->session->get_flash('error') . '</div>';
-	}
-?>
-
 <form method="post" action="<?php echo $this->opus->config->base_url('auth/login_post'); ?>">
 	<?= $form_elements ?>
 
