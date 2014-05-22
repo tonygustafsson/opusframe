@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Värd: 127.0.0.1
--- Tid vid skapande: 15 maj 2014 kl 14:40
+-- Tid vid skapande: 22 maj 2014 kl 21:27
 -- Serverversion: 5.6.16
 -- PHP-version: 5.5.9
 
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `movies` (
   `seen` datetime NOT NULL,
   `recommended` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=67 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=68 ;
 
 --
 -- Dumpning av Data i tabell `movies`
@@ -51,11 +51,12 @@ INSERT INTO `movies` (`id`, `name`, `genre`, `rating`, `media_type`, `seen`, `re
 (34, 'The Testing', 'Action', 4, '', '1970-01-01 00:00:00', 0),
 (36, 'TonyMovie', 'Det', 5, '', '0000-00-00 00:00:00', 0),
 (37, 'Kalle Anka', 'Kakke', 4, '', '2014-04-11 00:00:00', 0),
-(40, 'The mourning', 'SciFi', 5, '', '2014-04-02 00:00:00', 0),
+(40, 'The mourning', 'Action', 5, 'DVD', '2014-04-02 00:00:00', 0),
 (50, 'Kakmovie', 'SciFi', 2, 'DVD', '2014-04-26 00:00:00', 1),
 (51, 'KalleAnka &amp;amp; CO', 'Romance', 2, 'DVD', '2014-05-02 00:00:00', 0),
 (65, 'The turna', 'Romance', 3, 'DVD', '2014-05-06 00:00:00', 0),
-(66, 'The Grinding', 'Romance', 2, 'DVD', '2014-05-06 00:00:00', 0);
+(66, 'The Grinding', 'Romance', 2, 'DVD', '2014-05-06 00:00:00', 0),
+(67, 'Heffaklumpen', 'Adventure', 4, 'BluRay', '2014-05-21 00:00:00', 1);
 
 -- --------------------------------------------------------
 
@@ -69,6 +70,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` varchar(255) NOT NULL,
   `real_name` varchar(150) NOT NULL,
   `activated` int(1) NOT NULL,
+  `token_reset_password` varchar(50) DEFAULT NULL,
+  `token_activation` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

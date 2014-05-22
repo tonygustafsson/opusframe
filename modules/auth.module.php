@@ -12,14 +12,24 @@
 
 			/* protect_all or protect_none, sets the default, can also be changed per controller method */
 			$this->method = "protect_all";
+
+			$this->restricted['movies/index'] = FALSE;
+			$this->restricted['movies/sort'] = FALSE;
+			$this->restricted['movies/search'] = FALSE;
+
 			$this->require_user_activation = TRUE; //If true, the user has to activate his user via email
+
+			$this->module_path = 'auth';
 
 			$this->db_table = "users";
 			$this->db_id_column = "id";
 			$this->db_username_column = "username";
 			$this->db_password_column = "password";
+			$this->db_verify_password_column = "verify_password";
 			$this->db_real_name_column = "real_name";
-			$this->db_reset_password_column = "reset_password";
+			$this->db_token_reset_password_column = "token_reset_password";
+			$this->db_token_activation_column = "token_activation";
+			$this->db_activated_column = "activated";
 
 			$this->session_id_field = 'user_session_id';
 			$this->session_ip_field = 'ip';
@@ -57,11 +67,25 @@
 					'type' => 'password',
 					'form_name' => 'verify_password'
 				),
-				'reset_password' => array(
+				'token_reset_password' => array(
 					'friendly_name' => 'Reset password',
 					'type' => 'string',
 					'form_name' => 'reset_password',
 					'max_length' => 50,
+					'hidden' => TRUE
+				),
+				'token_activation' => array(
+					'friendly_name' => 'Activation token',
+					'type' => 'string',
+					'form_name' => 'token_activation',
+					'max_length' => 50,
+					'hidden' => TRUE
+				),
+				'activated' => array(
+					'friendly_name' => 'Activated',
+					'type' => 'int',
+					'form_name' => 'activated',
+					'max_length' => 1,
 					'hidden' => TRUE
 				)
 			);
@@ -70,16 +94,12 @@
 			if (! isset($_SESSION[$this->session_id_field]))
 				$_SESSION[$this->session_id_field] = uniqid();
 
-			if (isset($_POST['password']) && isset($_POST['verify_password']))
-			{
-				$this->data_model['verify_password']['exact_match'] = array($_POST['password']);
-			}
-
-			$this->module_path = 'auth';
+			if (isset($_POST[$this->db_password_column]) && isset($_POST[$this->db_verify_password_column]))
+				$this->data_model[$this->db_verify_password_column]['exact_match'] = array($_POST[$this->db_password_column]);
 
 			if (isset($_SESSION[$this->session_username_field]))
 			{
-				$get_parameter['username'] = $_SESSION[$this->session_username_field];
+				$get_parameter[$this->db_username_column] = $_SESSION[$this->session_username_field];
 				$this->user = $this->get_user($get_parameter);
 			}
 			else
@@ -87,10 +107,6 @@
 
 			if (isset($_SESSION[$this->session_ip_field]) && $_SESSION[$this->session_ip_field] !== $_SERVER['REMOTE_ADDR'])
 				$this->logout(); //If the user has changed IP, log out the user
-
-			$this->restricted['movies/index'] = FALSE;
-			$this->restricted['movies/sort'] = FALSE;
-			$this->restricted['movies/search'] = FALSE;
 
 			$is_restricted = $this->is_restricted($this->opus->config->area_name, $this->opus->config->method_name);
 			$this->opus->prevent_controller_load = $is_restricted;
@@ -113,7 +129,7 @@
 					$_SESSION[$this->session_prev_url_field] = $this->opus->config->path;
 				}
 
-				$make_settings['wanted_fields'] =  array('username', 'password');
+				$make_settings['wanted_fields'] =  array($this->db_username_column, $this->db_password_column);
 				$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
 
 				load::view('login.sharedview', $data);
@@ -122,7 +138,7 @@
 
 		public function login()
 		{
-			$make_settings['wanted_fields'] = array('username', 'password');
+			$make_settings['wanted_fields'] = array($this->db_username_column, $this->db_password_column);
 			$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
 
 			load::view('login.sharedview', $data);
@@ -130,17 +146,23 @@
 
 		public function login_post()
 		{
-			$get_parameter['username'] = $_POST['username'];
+			$get_parameter[$this->db_username_column] = $_POST[$this->db_username_column];
 			$user = $this->get_user($get_parameter, $by_pass_session_controll = TRUE);
 
-			if (! isset($user) || ! password_verify($_POST['password'], $user[$this->db_password_column]))
+			if (! isset($user) || ! password_verify($_POST[$this->db_password_column], $user[$this->db_password_column]))
 			{
 				$this->opus->session->set_flash('error', 'Wrong username or password!');
-				$this->opus->load->url('auth/login');
+				$this->opus->load->url($this->module_path . '/login');
+			}
+
+			if ($this->require_user_activation && (! isset($user) || $user[$this->db_activated_column] != 1))
+			{
+				$this->opus->session->set_flash('error', 'You need to activate your user before you can login. Please check your mail box.');
+				$this->opus->load->url($this->module_path . '/login');
 			}
 
 			//The user ID field says that the user is logged in
-			$_SESSION[$this->session_username_field] = $user['username'];
+			$_SESSION[$this->session_username_field] = $user[$this->db_username_column];
 			$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
 
 			//Remember the URL the person came from, and redirect him here instead of the startpage
@@ -152,7 +174,7 @@
 
 		public function register()
 		{
-			$make_settings['wanted_fields'] =  array('real_name', 'username', 'password', 'verify_password');
+			$make_settings['wanted_fields'] =  array($this->db_real_name_column, $this->db_username_column, $this->db_password_column, $this->db_verify_password_column);
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
@@ -165,17 +187,27 @@
 		{
 			$_POST[$this->db_id_column] = $_SESSION[$this->session_id_field];
 			$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
+			$_POST[$this->db_activated_column] = 0;
+
+			if ($this->require_user_activation)
+			{
+				$_POST[$this->db_token_activation_column] = uniqid();
+				$activation_link = $this->opus->config->base_url($this->module_path . '/activation/' . $_POST[$this->db_token_activation_column]);
+			}
+			else
+				$_POST[$this->db_token_activation_column] = "";
+
 			
 			if ($this->is_registered($_POST[$this->db_username_column]))
 			{
 				//User already exists
-				$form_validation = array('username' => array(0 => 'This username is already taken.'));
+				$form_validation = array($this->db_username_column => array(0 => 'This username is already taken.'));
 			}
 			else
 			{
 				$insert_settings['table_name'] = $this->db_table;
 				$insert_settings['data_model'] = $this->data_model;
-				$insert_settings['fields'] = array('id', 'real_name', 'username', 'password');
+				$insert_settings['fields'] = array($this->db_id_column, $this->db_real_name_column, $this->db_username_column, $this->db_password_column, $this->db_activated_column, $this->db_token_activation_column);
 				$insert_output = $this->opus->database->insert($insert_settings);
 			}
 
@@ -189,8 +221,27 @@
 
 			if (! isset($insert_output->form_errors))
 			{
-				$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
-				$_SESSION[$this->session_username_field] = $_POST['username'];
+				if (! $this->require_user_activation)
+				{
+					//Don't log them in if we require activation first
+					$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
+					$_SESSION[$this->session_username_field] = $_POST[$this->db_username_column];
+				}
+				else
+				{
+					//Send mail
+					$this->opus->email = $this->opus->load->module('email');
+					$mail_args['to_name'] = $_POST[$this->db_real_name_column];
+					$mail_args['to_email'] = $_POST[$this->db_username_column];
+					$mail_args['subject'] = "Registration at " . $this->opus->config->site_name;
+					$mail_args['body'] = "Welcome to " . $this->opus->config->site_name . ".\n\n";
+					$mail_args['body'] .= "Please activate your user by clicking this link: " . $activation_link . "\r\n";
+					
+					if ($this->opus->email->send($mail_args))
+						$this->opus->session->set_flash('success', 'Welcome! Please check your inbox (' . $_POST[$this->db_username_column] . ') to activate your user!');
+					else
+						$this->opus->session->set_flash('error', 'Something went wrong when trying to email you.');
+				}
 
 				$this->opus->load->url('/');
 			}
@@ -203,9 +254,39 @@
 			}
 		}
 
+		public function activation()
+		{
+			if (! $this->require_user_activation)
+			{
+				$this->opus->session->set_flash('error', 'Activation is not needed.');
+				$this->opus->load->url('/');
+			}
+
+			$get_parameters[$this->db_token_activation_column] = $this->opus->config->url_args[0];
+			$user = $this->get_user($get_parameters, $by_pass_session_controll = TRUE);
+
+			if (! isset($user))
+			{
+				$this->opus->session->set_flash('error', 'Something is not right with your activation link.');
+				$this->opus->load->url('/');
+			}
+
+			$_POST[$this->db_activated_column] = 1;
+			$_POST[$this->db_token_activation_column] = "";
+			
+			$update_settings['table_name'] = $this->db_table;
+			$update_settings['data_model'] = $this->data_model;
+			$update_settings['fields'] = array($this->db_activated_column, $this->db_token_activation_column);
+			$update_settings['where'][$this->db_token_activation_column] = $user[$this->db_token_activation_column];
+			$update_output = $this->opus->database->update($update_settings);
+
+			$this->opus->session->set_flash('success', 'You have successfully activated your user!');
+			$this->opus->load->url($this->module_path . '/login/');
+		}
+
 		public function forgot_password()
 		{
-			$make_settings['wanted_fields'] =  array('username');
+			$make_settings['wanted_fields'] =  array($this->db_username_column);
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
@@ -219,7 +300,7 @@
 			if (! $this->is_registered($_POST[$this->db_username_column]))
 			{
 				//User already exists
-				$form_errors = array('username' => array(0 => 'This user is not registered.'));
+				$form_errors = array($this->db_username_column => array(0 => 'This user is not registered.'));
 
 				$this->opus->session->set_flash('form_validation', $form_errors);
 				$this->opus->session->set_flash('form_values', $_POST);
@@ -228,25 +309,25 @@
 			}
 
 			//Get the user
-			$get_parameter['username'] = $_POST[$this->db_username_column];
+			$get_parameter[$this->db_username_column] = $_POST[$this->db_username_column];
 			$user = $this->get_user($get_parameter, $by_pass_session_controll = TRUE);
 
 			//Get a reset token
 			$reset_password_token = uniqid();
-			$reset_password_url = $this->opus->config->base_url('/auth/reset_password/' . $reset_password_token);
-			$_POST['reset_password'] = $reset_password_token;
+			$reset_password_url = $this->opus->config->base_url($this->module_path . '/reset_password/' . $reset_password_token);
+			$_POST[$this->db_token_reset_password_column] = $reset_password_token;
 
 			//Write token to database
 			$update_settings['data_model'] = $this->data_model;
 			$update_settings['table_name'] = $this->db_table;
-			$update_settings['fields'] = array('reset_password');
-			$update_settings['where']['id'] = $user['id'];
+			$update_settings['fields'] = array($this->db_token_reset_password_column);
+			$update_settings['where'][$this->db_id_column] = $user[$this->db_id_column];
 			$update_output = $this->opus->database->update($update_settings);
 
 			//Send mail
 			$this->opus->email = $this->opus->load->module('email');
-			$mail_args['to_name'] = $user['real_name'];
-			$mail_args['to_email'] = $user['username'];
+			$mail_args['to_name'] = $user[$this->db_real_name_column];
+			$mail_args['to_email'] = $user[$this->db_username_column];
 			$mail_args['subject'] = "Forgotten password";
 			$mail_args['body'] = "You can reset your password by visiting this link: " . $reset_password_url . "\r\n";
 			
@@ -260,14 +341,14 @@
 
 		public function reset_password()
 		{
-			$get_parameter['reset_password'] = $this->opus->config->url_args[0];
+			$get_parameter[$this->db_token_reset_password_column] = $this->opus->config->url_args[0];
 			$user = $this->get_user($get_parameter, $by_pass_session_controll = TRUE);
 
 			if (isset($user))
 			{
-				$make_settings['wanted_fields'] =  array('reset_password', 'password', 'verify_password');
+				$make_settings['wanted_fields'] =  array($this->db_token_reset_password_column, $this->db_password_column, $this->db_verify_password_column);
 				$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
-				$make_settings['values']['reset_password'] = $this->opus->config->url_args[0];
+				$make_settings['values'][$this->db_token_reset_password_column] = $this->opus->config->url_args[0];
 
 				$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
 
@@ -282,7 +363,7 @@
 
 		public function reset_password_post()
 		{
-			$get_parameters['reset_password'] = $_POST['reset_password'];
+			$get_parameters[$this->db_token_reset_password_column] = $_POST[$this->db_token_reset_password_column];
 			$user = $this->get_user($get_parameters, $by_pass_session_controll = TRUE);
 
 			if (! isset($user))
@@ -292,12 +373,12 @@
 			}
 
 			$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
-			$_POST['reset_password'] = "";
+			$_POST[$this->db_token_reset_password_column] = "";
 			
 			$update_settings['table_name'] = $this->db_table;
 			$update_settings['data_model'] = $this->data_model;
-			$update_settings['fields'] = array('password', 'reset_password');
-			$update_settings['where']['reset_password'] = $user['reset_password'];
+			$update_settings['fields'] = array($this->db_password_column, $this->db_token_reset_password_column);
+			$update_settings['where'][$this->db_token_reset_password_column] = $user[$this->db_token_reset_password_column];
 			$update_output = $this->opus->database->update($update_settings);
 
 			if (isset($update_output->form_errors))
@@ -305,7 +386,7 @@
 				$this->opus->session->set_flash('form_validation', $update_output->form_errors);
 				$this->opus->session->set_flash('form_values', $_POST);
 
-				$this->opus->load->url($this->module_path . '/reset_password/' . $user['reset_password']);
+				$this->opus->load->url($this->module_path . '/reset_password/' . $user[$this->db_token_reset_password_column]);
 			}
 
 			$this->opus->session->set_flash('success', 'You have successfully changed password.');
@@ -321,12 +402,14 @@
 		public function get_user($get_parameter, $by_pass_session_controll = FALSE)
 		{
 			$get_settings['table_name'] = $this->db_table;
-			$get_settings['select'] = array($this->db_id_column, $this->db_username_column, $this->db_real_name_column, $this->db_password_column, $this->db_reset_password_column);
+			$get_settings['select'] = array($this->db_id_column, $this->db_username_column, $this->db_real_name_column, $this->db_password_column, $this->db_token_reset_password_column, $this->db_token_activation_column, $this->db_activated_column);
 
-			if (array_key_exists('username', $get_parameter))
-				$get_settings['where'][$this->db_username_column] = $get_parameter['username'];
-			else if (array_key_exists('reset_password', $get_parameter))
-				$get_settings['where'][$this->db_reset_password_column] = $get_parameter['reset_password'];
+			if (array_key_exists($this->db_username_column, $get_parameter))
+				$get_settings['where'][$this->db_username_column] = $get_parameter[$this->db_username_column];
+			else if (array_key_exists($this->db_token_reset_password_column, $get_parameter))
+				$get_settings['where'][$this->db_token_reset_password_column] = $get_parameter[$this->db_token_reset_password_column];
+			else if (array_key_exists($this->db_token_activation_column, $get_parameter))
+				$get_settings['where'][$this->db_token_activation_column] = $get_parameter[$this->db_token_activation_column];
 			
 			$db_user = $this->opus->database->get_row($get_settings);
 
@@ -339,6 +422,7 @@
 				return NULL;
 
 			$db_user['logged_in'] = TRUE;
+
 			return $db_user;
 		}
 
@@ -364,14 +448,9 @@
 			}
 
 			if ($is_restricted && (! isset($_SESSION[$this->session_ip_field]) || $_SESSION[$this->session_ip_field] != $_SERVER['REMOTE_ADDR']))
-			{
 				return TRUE;
-			}
 			else
-			{
 				return FALSE;
-			}
-
 		}
 
 		public function is_registered($username)
