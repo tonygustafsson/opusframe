@@ -11,6 +11,7 @@
 
 			//Installed modules: database, auth, cache
 			$this->autoload_modules = array(
+					'log',
 					'session',
 					'form',
 					'database',
