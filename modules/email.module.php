@@ -6,6 +6,8 @@
 		{	
 			$this->opus =& opus::$instance;
 
+			$this->enable_emailing  = FALSE; //If false, only log to file for debugging
+
 			$this->smtp_host		= "localhost";
 			$this->smtp_port		= 25; //25 for SMTP, 587 for SMTP through SSL
 			$this->smtp_auth		= FALSE;
@@ -31,9 +33,10 @@
 			$this->smtp_codes['tls_accepted'] = 454;
 			$this->smtp_codes['connection_closed'] = 221;
 
-			@$this->mail = fsockopen($this->smtp_host, $this->smtp_port, $errno, $errstr, $this->smtp_timeout);
+			if ($this->enable_emailing)
+				@$this->mail = fsockopen($this->smtp_host, $this->smtp_port, $errno, $errstr, $this->smtp_timeout);
 
-			if (! $this->mail)
+			if ($this->enable_emailing && ! $this->mail)
 					exit("ERROR: Failed to connect to SMTP server.");
 		}
 
@@ -113,10 +116,14 @@
 			//Send a command to the SMTP server, and first wait for a certain error code
 			$success = FALSE;
 
-			if ($wanted_response_code === FALSE)
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Send: ' . $command); }
+
+			if (! $this->enable_emailing || $wanted_response_code === FALSE)
 			{
 				//No need to wait for the right answer before sending.
-				fwrite($this->mail, $command . "\r\n");
+				if ($this->enable_emailing)
+					fwrite($this->mail, $command . "\r\n");
+
 				$success = TRUE;
 			}
 			else
@@ -127,19 +134,23 @@
 					$smtp_response = $this->read_response();
 					$smtp_code = substr($smtp_response, 0, 3); //Get three first chars, like "250"
 
+					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Respond: ' . $smtp_response); }
+
 					if (substr($smtp_code, 0, 1) == "5")
 						exit('Recieved SMTP error: ' . $smtp_response);
 
 					if ($smtp_code == $wanted_response_code)
 					{
-						fwrite($this->mail, $command . "\r\n");
+						if ($this->enable_emailing)
+							fwrite($this->mail, $command . "\r\n");
+
 						$success = TRUE;
 						break;
 					}
 				}
 			}
 
-			if ($success === FALSE)
+			if ($this->enable_emailing && $success === FALSE)
 				exit('Could not send command: "' . $command . '". Aborting email.<p>');
 		}
 
@@ -147,12 +158,15 @@
 		{
 			$data = "";
 
-			while ($str = fread($this->mail, 512))
+			if (isset($this->mail))
 			{
-				$data .= $str;
+				while ($str = fread($this->mail, 512))
+				{
+					$data .= $str;
 
-				if (substr($str, 3, 1) == " ")
-					break;
+					if (substr($str, 3, 1) == " ")
+						break;
+				}
 			}
 
 			return $data;
