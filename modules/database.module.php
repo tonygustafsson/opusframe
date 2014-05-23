@@ -66,6 +66,7 @@
 				$sql .= ' LIMIT ' . $limit;
 			}
 
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 			$result = $this->db->query($sql);
 
 			if (! $result)
@@ -126,6 +127,7 @@
 			$sql .= is_numeric(current($get_settings['where'])) ? current($get_settings['where']) : '"' . current($get_settings['where']) . '"';
 			$sql .= " LIMIT 1";
 
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 			$result = $this->db->query($sql);
 
 			if (! $result)
@@ -134,9 +136,11 @@
 			return $result->fetch_assoc();
 		}
 
-		public function query($query)
+		public function query($sql)
 		{
-			if (! $result = $this->db->query($query))
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
+
+			if (! $result = $this->db->query($sql))
 			{
 			    die('Database error: '. $this->db->error);
 			}
@@ -181,6 +185,8 @@
 				if (isset($insert_settings['table_name']) && ! empty($keys) && ! empty($values))
 				{
 					$sql = 'INSERT INTO ' . $insert_settings['table_name'] . ' (' . $keys . ') VALUES (' . $values . ');';
+					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
+
 					$result = $this->db->query($sql);
 
 					if (! $result)
@@ -229,6 +235,7 @@
 					$sql .= ' WHERE ' . key($update_settings['where']) . ' = ';
 					$sql .= is_numeric(current($update_settings['where'])) ? current($update_settings['where']) : '"' . current($update_settings['where']) . '"';
 
+					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 					$result = $this->db->query($sql);
 
 					if (! $result)
@@ -249,6 +256,7 @@
 			$sql .= ' WHERE ' . key($delete_settings['where']) . ' = ';
 			$sql .= is_numeric(current($delete_settings['where'])) ? current($delete_settings['where']) : '"' . current($delete_settings['where']) . '"';
 
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 			$result = $this->db->query($sql);
 
 			if (! $result)

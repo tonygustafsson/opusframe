@@ -70,7 +70,7 @@
 				'token_reset_password' => array(
 					'friendly_name' => 'Reset password',
 					'type' => 'string',
-					'form_name' => 'reset_password',
+					'form_name' => 'token_reset_password',
 					'max_length' => 50,
 					'hidden' => TRUE
 				),
@@ -161,6 +161,8 @@
 				$this->opus->load->url($this->module_path . '/login');
 			}
 
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $user[$this->db_username_column] . ' logged in from ' . $_SERVER['REMOTE_ADDR']); }
+
 			//The user ID field says that the user is logged in
 			$_SESSION[$this->session_username_field] = $user[$this->db_username_column];
 			$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
@@ -243,6 +245,7 @@
 						$this->opus->session->set_flash('error', 'Something went wrong when trying to email you.');
 				}
 
+				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $_POST[$this->db_username_column] . ' registered from ' . $_SERVER['REMOTE_ADDR']); }
 				$this->opus->load->url('/');
 			}
 			else
@@ -279,6 +282,8 @@
 			$update_settings['fields'] = array($this->db_activated_column, $this->db_token_activation_column);
 			$update_settings['where'][$this->db_token_activation_column] = $user[$this->db_token_activation_column];
 			$update_output = $this->opus->database->update($update_settings);
+
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $user[$this->db_username_column] . ' activated the account.'); }
 
 			$this->opus->session->set_flash('success', 'You have successfully activated your user!');
 			$this->opus->load->url($this->module_path . '/login/');
@@ -323,6 +328,8 @@
 			$update_settings['fields'] = array($this->db_token_reset_password_column);
 			$update_settings['where'][$this->db_id_column] = $user[$this->db_id_column];
 			$update_output = $this->opus->database->update($update_settings);
+
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $_POST[$this->db_username_column] . ' wants to reset the password.'); }
 
 			//Send mail
 			$this->opus->email = $this->opus->load->module('email');
@@ -388,6 +395,8 @@
 
 				$this->opus->load->url($this->module_path . '/reset_password/' . $user[$this->db_token_reset_password_column]);
 			}
+
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $user[$this->db_username_column] . ' resetted the password.'); }
 
 			$this->opus->session->set_flash('success', 'You have successfully changed password.');
 			$this->opus->load->url($this->module_path . '/login/');

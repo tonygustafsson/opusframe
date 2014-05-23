@@ -261,6 +261,9 @@
 				}	
 			}
 
+			if (isset($error))
+				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('warning', 'Error: ' . implode("\r\n", $error)); }
+
 			return (isset($error)) ? $error : NULL;
 		}
 

@@ -50,6 +50,9 @@
 		public function set_flash($name, $data)
 		{
 			$session_name = $this->flash_pre_name . $this->flash_next_name . $name;
+
+			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'Flash set: ' . $session_name); }
+
 			$_SESSION[$session_name] = $data;
 		}
 
@@ -59,6 +62,8 @@
 
 			if (isset($_SESSION[$session_name]) && ! empty($_SESSION[$session_name]))
 			{
+				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'Flash get: ' . $name); }
+
 				return $_SESSION[$session_name];
 			}
 			else
