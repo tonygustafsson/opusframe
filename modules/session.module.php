@@ -8,12 +8,38 @@
 
 			if (! session_id()) { session_start(); }
 
+			$this->session_timeout = 30 * 60; //Seconds
+			$this->created_identifier = 'session_created';
+
+			//Log out visitors with old sessions
+			$this->logout_old_sessions();
+			$_SESSION[$this->created_identifier] = time();
+
 			$this->flash_pre_name = 'flash_';
 			$this->flash_next_name = 'next_';
 			$this->flash_current_name = 'current_';
 
 			$this->remove_old_flash();
 			$this->prepare_current_flash();
+		}
+
+		private function logout_old_sessions()
+		{
+			//Logout users that has a session older than $this->session_timeout minutes
+			if
+			(
+				! isset($_SESSION['remember_session'])
+				&& isset($_SESSION[$this->created_identifier])
+				&& (time() - $_SESSION[$this->created_identifier]) > $this->session_timeout
+			)
+			{
+				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', session_id() . ' logged out due to session timeout (' . (time() - $_SESSION[$this->created_identifier]) . '/' . $this->session_timeout . ' seconds)'); }
+
+				session_unset();
+				session_destroy();
+
+				session_start();
+			}
 		}
 
 		public function remove_old_flash()

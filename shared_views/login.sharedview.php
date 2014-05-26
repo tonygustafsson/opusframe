@@ -9,7 +9,7 @@
 <form method="post" action="<?php echo $this->opus->config->base_url('auth/login_post'); ?>">
 	<?= $form_elements ?>
 
-	<a href="<?=$this->opus->config->base_url('auth/forgot_password')?>">I forgot my password</a>
+	<p><a href="<?=$this->opus->config->base_url('auth/forgot_password')?>">I forgot my password</a></p>
 
 	<input type="submit" value="Log in">
 </form>

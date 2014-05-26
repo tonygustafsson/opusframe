@@ -3,7 +3,7 @@
 	{
 
 		public function __construct()
-		{	
+		{
 			$this->opus =& opus::$instance;
 
 			$this->opus->load->require_modules(array('session', 'form', 'database'));
@@ -35,6 +35,7 @@
 			$this->session_ip_field = 'ip';
 			$this->session_username_field = 'username';
 			$this->session_prev_url_field = 'previous_url';
+			$this->remember_session_field = 'remember_session';
 
 			$this->data_model = array(
 				'id' => array(
@@ -66,6 +67,11 @@
 					'friendly_name' => 'Verify password',
 					'type' => 'password',
 					'form_name' => 'verify_password'
+				),
+				'remember_session' => array(
+					'friendly_name' => 'Remember me',
+					'type' => 'bool',
+					'form_name' => 'remember_session'
 				),
 				'token_reset_password' => array(
 					'friendly_name' => 'Reset password',
@@ -138,7 +144,7 @@
 
 		public function login()
 		{
-			$make_settings['wanted_fields'] = array($this->db_username_column, $this->db_password_column);
+			$make_settings['wanted_fields'] = array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
 			$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
 
 			load::view('login.sharedview', $data);
@@ -166,6 +172,9 @@
 			//The user ID field says that the user is logged in
 			$_SESSION[$this->session_username_field] = $user[$this->db_username_column];
 			$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
+
+			if ($_POST[$this->remember_session_field] == "1")
+				$_SESSION[$this->remember_session_field] = TRUE;
 
 			//Remember the URL the person came from, and redirect him here instead of the startpage
 			$url = (isset($_SESSION[$this->session_prev_url_field])) ? $_SESSION[$this->session_prev_url_field] : '/';
