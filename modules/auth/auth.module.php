@@ -37,71 +37,14 @@
 			$this->session_prev_url_field = 'previous_url';
 			$this->remember_session_field = 'remember_session';
 
-			$this->data_model = array(
-				'id' => array(
-					'friendly_name' => 'ID',
-					'type' => 'string',
-					'form_name' => 'id',
-					'max_length' => 30
-				),
-				'username' => array(
-					'friendly_name' => 'Email address',
-					'type' => 'string',
-					'form_name' => 'username',
-					'min_length' => 3,
-					'max_length' => 150
-				),
-				'real_name' => array(
-					'friendly_name' => 'Name',
-					'type' => 'string',
-					'form_name' => 'real_name',
-					'min_length' => 3,
-					'max_length' => 150
-				),
-				'password' => array(
-					'friendly_name' => 'Password',
-					'type' => 'password',
-					'form_name' => 'password',
-				),
-				'verify_password' => array(
-					'friendly_name' => 'Verify password',
-					'type' => 'password',
-					'form_name' => 'verify_password'
-				),
-				'remember_session' => array(
-					'friendly_name' => 'Remember me',
-					'type' => 'bool',
-					'form_name' => 'remember_session'
-				),
-				'token_reset_password' => array(
-					'friendly_name' => 'Reset password',
-					'type' => 'string',
-					'form_name' => 'token_reset_password',
-					'max_length' => 50,
-					'hidden' => TRUE
-				),
-				'token_activation' => array(
-					'friendly_name' => 'Activation token',
-					'type' => 'string',
-					'form_name' => 'token_activation',
-					'max_length' => 50,
-					'hidden' => TRUE
-				),
-				'activated' => array(
-					'friendly_name' => 'Activated',
-					'type' => 'int',
-					'form_name' => 'activated',
-					'max_length' => 1,
-					'hidden' => TRUE
-				)
-			);
+			$this->model = $this->opus->load->model('auth');
 
 			//Set a unique ID that don't changes ever 5 minutes as session_id does.
 			if (! isset($_SESSION[$this->session_id_field]))
 				$_SESSION[$this->session_id_field] = uniqid();
 
 			if (isset($_POST[$this->db_password_column]) && isset($_POST[$this->db_verify_password_column]))
-				$this->data_model[$this->db_verify_password_column]['exact_match'] = array($_POST[$this->db_password_column]);
+				$this->model->data_model[$this->db_verify_password_column]['exact_match'] = array($_POST[$this->db_password_column]);
 
 			if (isset($_SESSION[$this->session_username_field]))
 			{
@@ -135,19 +78,19 @@
 					$_SESSION[$this->session_prev_url_field] = $this->opus->config->path;
 				}
 
-				$make_settings['wanted_fields'] =  array($this->db_username_column, $this->db_password_column);
-				$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
+				$make_settings['wanted_fields'] =  array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
+				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				load::view('login.sharedview', $data);
+				load::view('login', $data);
 			}
 		}
 
 		public function login()
 		{
 			$make_settings['wanted_fields'] = array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
-			$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
+			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			load::view('login.sharedview', $data);
+			load::view('login', $data);
 		}
 
 		public function login_post()
@@ -189,9 +132,9 @@
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
-			$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
+			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			load::view('register.sharedview', $data);
+			load::view('register', $data);
 		}
 
 		public function register_post()
@@ -217,7 +160,7 @@
 			else
 			{
 				$insert_settings['table_name'] = $this->db_table;
-				$insert_settings['data_model'] = $this->data_model;
+				$insert_settings['data_model'] = $this->model->data_model;
 				$insert_settings['fields'] = array($this->db_id_column, $this->db_real_name_column, $this->db_username_column, $this->db_password_column, $this->db_activated_column, $this->db_token_activation_column);
 				$insert_output = $this->opus->database->insert($insert_settings);
 			}
@@ -287,7 +230,7 @@
 			$_POST[$this->db_token_activation_column] = "";
 			
 			$update_settings['table_name'] = $this->db_table;
-			$update_settings['data_model'] = $this->data_model;
+			$update_settings['data_model'] = $this->model->data_model;
 			$update_settings['fields'] = array($this->db_activated_column, $this->db_token_activation_column);
 			$update_settings['where'][$this->db_token_activation_column] = $user[$this->db_token_activation_column];
 			$update_output = $this->opus->database->update($update_settings);
@@ -304,9 +247,9 @@
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
-			$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
+			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			load::view('forgot_password.sharedview', $data);
+			load::view('forgot_password', $data);
 		}
 
 		public function forgot_password_post()
@@ -332,7 +275,7 @@
 			$_POST[$this->db_token_reset_password_column] = $reset_password_token;
 
 			//Write token to database
-			$update_settings['data_model'] = $this->data_model;
+			$update_settings['data_model'] = $this->model->data_model;
 			$update_settings['table_name'] = $this->db_table;
 			$update_settings['fields'] = array($this->db_token_reset_password_column);
 			$update_settings['where'][$this->db_id_column] = $user[$this->db_id_column];
@@ -366,9 +309,9 @@
 				$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 				$make_settings['values'][$this->db_token_reset_password_column] = $this->opus->config->url_args[0];
 
-				$data['form_elements'] = $this->opus->form->make($this->data_model, $make_settings);
+				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				load::view('reset_password.sharedview', $data);
+				load::view('reset_password', $data);
 			}
 			else
 			{
@@ -392,7 +335,7 @@
 			$_POST[$this->db_token_reset_password_column] = "";
 			
 			$update_settings['table_name'] = $this->db_table;
-			$update_settings['data_model'] = $this->data_model;
+			$update_settings['data_model'] = $this->model->data_model;
 			$update_settings['fields'] = array($this->db_password_column, $this->db_token_reset_password_column);
 			$update_settings['where'][$this->db_token_reset_password_column] = $user[$this->db_token_reset_password_column];
 			$update_output = $this->opus->database->update($update_settings);

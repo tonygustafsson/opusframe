@@ -1,6 +1,6 @@
 <?php
 	if (! load::is_ajax_request()) {
-		load::view('header.sharedview', $data);
+		load::view('header', $data);
 	}
 ?>
 
@@ -16,6 +16,6 @@
 
 <?php
 	if (! load::is_ajax_request()) {
-		load::view('footer.sharedview', $data);
+		load::view('footer', $data);
 	}
 ?>

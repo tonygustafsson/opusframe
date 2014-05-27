@@ -86,9 +86,7 @@
 					$make_settings['values'] = $this->opus->session->get_flash('form_values');
 				}
 				else
-				{
 					$make_settings['values'] = $movie_info;
-				}
 
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 

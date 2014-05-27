@@ -41,7 +41,7 @@
 			else
 			{
 				//Page does not exist
-				load::view('404.sharedview');
+				load::view('404');
 			}
 			
 			//Save outputted views to $contents
@@ -54,7 +54,7 @@
 
 		public function module($module)
 		{
-			$this_module_path = 'modules/' . $module . '.module.php';
+			$this_module_path = 'modules/' . $module . '/' . $module . '.module.php';
 			
 			if (file_exists($this_module_path))
 			{
@@ -63,62 +63,53 @@
 				return new $class_name();
 			}
 			else
-			{
 				echo 'Could not find module ' . $this_module_path;
-			}
 		}
 
-		public function view($view, $data = false)
+		public function view($view, $data = FALSE)
 		{
-			$shared_view = (substr_compare($view, '.sharedview', -strlen('.sharedview'), strlen('.sharedview')) === 0) ? TRUE : FALSE;
+			//Get view path depending on if the caller method is a controller, a module or something else
+			$backtrace = debug_backtrace()[0];
 
-			if ($shared_view)
-			{
-				$this_view_path = $this->opus->config->view_path_shared . '/' . $view . '.php';
-			}
+			if (isset($backtrace['file']) && strpos($backtrace['file'], '.controller.php') !== FALSE)
+				$view_path = dirname($backtrace['file']) . '\\' . $view . '.view.php';
+			else if (isset($backtrace['file']) && strpos($backtrace['file'], '.module.php') !== FALSE)
+				$view_path = dirname($backtrace['file']) . '\\' . $view . '.view.php';
 			else
-			{
-				$this_view_path = $this->opus->config->view_path . '/' . $view . '.view.php';
-			}
+				$view_path = $this->opus->config->base_path_absolute . '/views/' . $view . '.view.php';
 
-			if (file_exists($this_view_path))
+			//Load the view
+			if (file_exists($view_path))
 			{
 				if ($data)
-				{
 					extract($data);
-				}
 				
-				include($this_view_path);
+				include($view_path);
 			}
 			else
-			{
-				echo 'View ' . $this_view_path . ' was not found.';
-			}
+				echo 'View ' . $view_path . ' was not found.';
 		}
 
 		public function model($model)
 		{
-			if (substr($model, 0, 7) == "shared_")
-			{
-				$this_model_path = $this->opus->config->base_path . $this->opus->config->model_path_shared . '/' . $model . '.model.php';
-			}
+			//Get model path depending on if the caller method is a controller, a module or something else
+			$backtrace = debug_backtrace()[0];
+
+			if (isset($backtrace['file']) && strpos($backtrace['file'], '.controller.php') !== FALSE)
+				$model_path = dirname($backtrace['file']) . '\\' . $model . '.model.php';
+			else if (isset($backtrace['file']) && strpos($backtrace['file'], '.module.php') !== FALSE)
+				$model_path = dirname($backtrace['file']) . '\\' . $model . '.model.php';
 			else
+				$model_path = $this->opus->config->base_path_absolute . '/models/' . $model . '.model.php';
+					
+			if (file_exists($model_path))
 			{
-				$this_model_path = 'areas/' . $this->opus->config->area_name . '/' . $model . '.model.php';
-			}
-			
-			$thisModelPath = $this->opus->config->modelPath . $model . '.php';
-		
-			if (file_exists($this_model_path))
-			{
-				include($this_model_path);
+				include($model_path);
 				$class_name = $model . '_model';
 				return new $class_name();
 			}
 			else
-			{
-				echo 'Could not find model ' . $this_model_path;
-			}
+				echo 'Could not find model ' . $model_path;
 		}
 
 		public function css($css_file)

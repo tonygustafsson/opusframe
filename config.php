@@ -75,11 +75,8 @@
 			$this->area_url = $this->base_url . '/' .  $area_name;
 			$this->method_name = $method_name;
 			$this->url_args = $url_args;
-			$this->modelPath = "./models/";
 			$this->modulesPath = "./modules/";
 			$this->controller_path = 'areas/' . $this->area_name . '/' . $this->area_name . '.controller.php';
-			$this->view_path = 'areas/' . $this->area_name;
-			$this->view_path_shared = 'shared_views/';
 			$this->style_path = $this->base_path . '/assets/css/';
 			$this->js_path = $this->base_path . '/assets/js/';
 		}
