@@ -10,7 +10,7 @@
 
 		public function index()
 		{
-			$get_settings['table_name'] = 'movies';
+			$get_settings['data_model'] = $this->model->data_model;
 			$get_settings['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 			$get_settings['get_total_rows'] = TRUE;
 
@@ -47,7 +47,6 @@
 		public function create_post()
 		{
 			$insert_settings['data_model'] = $this->model->data_model;
-			$insert_settings['table_name'] = 'movies';
 			$insert_settings['fields'] = array('name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 			$insert_output = $this->opus->database->insert($insert_settings);
 
@@ -72,7 +71,7 @@
 
 			if (! empty($id))
 			{
-				$get_settings['table_name'] = 'movies';
+				$get_settings['data_model'] = $this->model->data_model;
 				$get_settings['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 				$get_settings['where']['id'] = $id;
 				$movie_info = $this->opus->database->get_row($get_settings);
@@ -90,6 +89,8 @@
 
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
+				$data['max_images'] = $this->model->data_model['max_images'];
+
 				load::view('edit', $data);
 			}
 		}
@@ -97,7 +98,6 @@
 		public function edit_post()
 		{
 			$update_settings['data_model'] = $this->model->data_model;
-			$update_settings['table_name'] = 'movies';
 			$update_settings['fields'] = array('name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 			$update_settings['where']['id'] = $_POST['id'];
 			$update_output = $this->opus->database->update($update_settings);
@@ -121,7 +121,7 @@
 
 			if (! empty($id))
 			{
-				$delete_settings['table_name'] = 'movies';
+				$delete_settings['data_model'] = $this->model->data_model;
 				$delete_settings['where']['id'] = $id;
 				$this->opus->database->delete($delete_settings);
 

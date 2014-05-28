@@ -16,9 +16,9 @@
 
 			foreach ($wanted_fields as $wanted_field)
 			{
-				if (array_key_exists($wanted_field, $data_model))
+				if (array_key_exists($wanted_field, $data_model['fields']))
 				{
-					$field = $data_model[$wanted_field];
+					$field = $data_model['fields'][$wanted_field];
 					$value = "";
 
 					if ($values !== FALSE && isset($values[$wanted_field]))
@@ -173,7 +173,7 @@
 
 		function validate($data_model)
 		{
-			foreach ($data_model as $field)
+			foreach ($data_model['fields'] as $field)
 			{
 				if (isset($_POST[$field['form_name']]))
 				{
@@ -260,9 +260,6 @@
 					}
 				}	
 			}
-
-			if (isset($error))
-				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('warning', 'Error: ' . implode("\r\n", $error)); }
 
 			return (isset($error)) ? $error : NULL;
 		}

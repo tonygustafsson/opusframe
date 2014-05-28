@@ -42,7 +42,7 @@
 				$x++;
 			}
 
-			$sql .= ' FROM ' . $get_settings['table_name'];
+			$sql .= ' FROM ' . $get_settings['data_model']['db_table'];
 
 			if ($where !== FALSE)
 			{
@@ -70,15 +70,13 @@
 			$result = $this->db->query($sql);
 
 			if (! $result)
-			{
 			    die('Database error: '. $this->db->error);
-			}
 			else
 			{
 				if (isset($get_settings['get_total_rows']) && $get_settings['get_total_rows'] === TRUE)
 				{
 					//Also get number of rows for the table, for pagination mostly. Fastest way seems to be a separate query.
-					$total_rows_sql = 'SELECT COUNT(*) AS total_rows FROM ' . $get_settings['table_name'];
+					$total_rows_sql = 'SELECT COUNT(*) AS total_rows FROM ' . $get_settings['data_model']['db_table'];
 
 					if ($where !== FALSE)
 					{
@@ -122,7 +120,7 @@
 				$x++;
 			}
 
-			$sql .= ' FROM ' . $get_settings['table_name'];
+			$sql .= ' FROM ' . $get_settings['data_model']['db_table'];
 			$sql .= ' WHERE ' . key($get_settings['where']) . ' = ';
 			$sql .= is_numeric(current($get_settings['where'])) ? current($get_settings['where']) : '"' . current($get_settings['where']) . '"';
 			$sql .= " LIMIT 1";
@@ -163,7 +161,7 @@
 				$values = "";
 				$x = 1;
 
-				foreach ($insert_settings['data_model'] as $column_name => $column_settings)
+				foreach ($insert_settings['data_model']['fields'] as $column_name => $column_settings)
 				{
 					if (in_array($column_settings['form_name'], $insert_settings['fields']) && isset($_POST[$column_settings['form_name']]))
 					{
@@ -182,9 +180,9 @@
 
 				}
 
-				if (isset($insert_settings['table_name']) && ! empty($keys) && ! empty($values))
+				if (isset($insert_settings['data_model']['db_table']) && ! empty($keys) && ! empty($values))
 				{
-					$sql = 'INSERT INTO ' . $insert_settings['table_name'] . ' (' . $keys . ') VALUES (' . $values . ');';
+					$sql = 'INSERT INTO ' . $insert_settings['data_model']['db_table'] . ' (' . $keys . ') VALUES (' . $values . ');';
 					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 
 					$result = $this->db->query($sql);
@@ -229,9 +227,9 @@
 					$x++;
 				}
 
-				if (isset($update_settings['table_name']) && ! empty($changes))
+				if (isset($update_settings['data_model']['db_table']) && ! empty($changes))
 				{
-					$sql = 'UPDATE ' . $update_settings['table_name'] . ' SET ' . $changes;
+					$sql = 'UPDATE ' . $update_settings['data_model']['db_table'] . ' SET ' . $changes;
 					$sql .= ' WHERE ' . key($update_settings['where']) . ' = ';
 					$sql .= is_numeric(current($update_settings['where'])) ? current($update_settings['where']) : '"' . current($update_settings['where']) . '"';
 
@@ -252,7 +250,7 @@
 			//Clean the input from dangerous data
 			$_POST = $this->xss_clean($_POST);
 			
-			$sql = "DELETE FROM " . $delete_settings['table_name'];
+			$sql = "DELETE FROM " . $delete_settings['data_model']['db_table'];
 			$sql .= ' WHERE ' . key($delete_settings['where']) . ' = ';
 			$sql .= is_numeric(current($delete_settings['where'])) ? current($delete_settings['where']) : '"' . current($delete_settings['where']) . '"';
 

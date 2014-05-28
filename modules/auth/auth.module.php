@@ -21,7 +21,6 @@
 
 			$this->module_path = 'auth';
 
-			$this->db_table = "users";
 			$this->db_id_column = "id";
 			$this->db_username_column = "username";
 			$this->db_password_column = "password";
@@ -44,7 +43,7 @@
 				$_SESSION[$this->session_id_field] = uniqid();
 
 			if (isset($_POST[$this->db_password_column]) && isset($_POST[$this->db_verify_password_column]))
-				$this->model->data_model[$this->db_verify_password_column]['exact_match'] = array($_POST[$this->db_password_column]);
+				$this->model->data_model['fields'][$this->db_verify_password_column]['exact_match'] = array($_POST[$this->db_password_column]);
 
 			if (isset($_SESSION[$this->session_username_field]))
 			{
@@ -153,13 +152,9 @@
 
 			
 			if ($this->is_registered($_POST[$this->db_username_column]))
-			{
-				//User already exists
 				$form_validation = array($this->db_username_column => array(0 => 'This username is already taken.'));
-			}
 			else
 			{
-				$insert_settings['table_name'] = $this->db_table;
 				$insert_settings['data_model'] = $this->model->data_model;
 				$insert_settings['fields'] = array($this->db_id_column, $this->db_real_name_column, $this->db_username_column, $this->db_password_column, $this->db_activated_column, $this->db_token_activation_column);
 				$insert_output = $this->opus->database->insert($insert_settings);
@@ -171,7 +166,7 @@
 			elseif (! isset($insert_output->form_errors) && isset($form_validation))
 				$insert_output->form_errors = $form_validation;
 
-			$form_validation = (isset($insert_output->form_errors)) ? array_merge($insert_output->form_errors, $form_validation) : $insert_output->form_errors;
+			$form_validation = (isset($insert_output->form_errors) && isset($form_validation)) ? array_merge($insert_output->form_errors, $form_validation) : $insert_output->form_errors;
 
 			if (! isset($insert_output->form_errors))
 			{
@@ -229,7 +224,6 @@
 			$_POST[$this->db_activated_column] = 1;
 			$_POST[$this->db_token_activation_column] = "";
 			
-			$update_settings['table_name'] = $this->db_table;
 			$update_settings['data_model'] = $this->model->data_model;
 			$update_settings['fields'] = array($this->db_activated_column, $this->db_token_activation_column);
 			$update_settings['where'][$this->db_token_activation_column] = $user[$this->db_token_activation_column];
@@ -276,7 +270,6 @@
 
 			//Write token to database
 			$update_settings['data_model'] = $this->model->data_model;
-			$update_settings['table_name'] = $this->db_table;
 			$update_settings['fields'] = array($this->db_token_reset_password_column);
 			$update_settings['where'][$this->db_id_column] = $user[$this->db_id_column];
 			$update_output = $this->opus->database->update($update_settings);
@@ -334,7 +327,6 @@
 			$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
 			$_POST[$this->db_token_reset_password_column] = "";
 			
-			$update_settings['table_name'] = $this->db_table;
 			$update_settings['data_model'] = $this->model->data_model;
 			$update_settings['fields'] = array($this->db_password_column, $this->db_token_reset_password_column);
 			$update_settings['where'][$this->db_token_reset_password_column] = $user[$this->db_token_reset_password_column];
@@ -362,7 +354,7 @@
 
 		public function get_user($get_parameter, $by_pass_session_controll = FALSE)
 		{
-			$get_settings['table_name'] = $this->db_table;
+			$get_settings['data_model'] = $this->model->data_model;
 			$get_settings['select'] = array($this->db_id_column, $this->db_username_column, $this->db_real_name_column, $this->db_password_column, $this->db_token_reset_password_column, $this->db_token_activation_column, $this->db_activated_column);
 
 			if (array_key_exists($this->db_username_column, $get_parameter))
@@ -416,7 +408,7 @@
 
 		public function is_registered($username)
 		{
-			$get_settings['table_name'] = $this->db_table;
+			$get_settings['data_model'] = $this->model->data_model;
 			$get_settings['select'] = array($this->db_username_column);
 			$get_settings['where'][$this->db_username_column] = $username;
 			$db_user = $this->opus->database->get_row($get_settings);
