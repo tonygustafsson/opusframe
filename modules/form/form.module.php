@@ -162,6 +162,32 @@
 				}
 			}
 
+			if ($data_model['images_max'] > 0)
+			{
+				$movie_id = $this->opus->config->url_args[0];
+
+				$html .= '<section id="image_upload_area" data-item-id="' . $movie_id . '" data-max-size="' . $data_model['images_max_size'] . '">';
+
+						for ($x = 1; $x <= $data_model['images_max']; $x++)
+						{
+							$file = $this->opus->config->base_path_absolute . '/assets/images/uploads/movies/' . $movie_id . '_' . $x . '.jpg';
+							
+							$thumbs_array = glob($this->opus->config->base_path_absolute . '/assets/images/uploads/movies/' . $movie_id . '/*');
+							foreach ($thumbs_array as $thumb)
+								$thumbs[] = str_replace($_SERVER['DOCUMENT_ROOT'], "", $thumb);
+							
+							$thumbnail = (isset($thumbs[$x - 1])) ? $thumbs[$x - 1] : $this->opus->config->base_url('assets/images/no_pic.png');
+
+							$html .= '<section class="image_upload" id="images_upload_section" data-image-id="' . $x . '">';
+								$html .= '<img class="images_upload_thumb" id="thumb_' . $x . '" src="' . $thumbnail . '">';
+								$html .= '<input type="file" id="images_file_upload_' . $x . '" class="images_upload_input" name="images_upload_input" accept="' . implode(', ', $data_model['images_accepted_types']) . '">';
+								$html .= '<output class="images_upload_error" id="images_upload_error_' . $x . '"></output>';
+								$html .= '<output class="images_upload_success" id="images_upload_success_' . $x . '"></output>';
+							$html .= '</section>';
+						}
+				$html .= '</section>';
+			}
+
 			return $html;
 		}
 
@@ -262,6 +288,31 @@
 			}
 
 			return (isset($error)) ? $error : NULL;
+		}
+
+		public function file_upload($content)
+		{
+			$original_file_name = $_SERVER['HTTP_X_ORIGINAL_FILE_NAME'];
+			$original_file_extension = strtolower(end(explode('.', $original_file_name)));
+
+			switch ($original_file_extension)
+			{
+				case 'png':
+					$file_extension = 'png';
+				case 'gif':
+					$file_extension = 'gif';
+				default:
+					$file_extension = 'jpg';
+			}
+
+			$item_id = $_SERVER['HTTP_X_ITEM_ID'];
+			$image_id = $_SERVER['HTTP_X_IMAGE_ID'];
+			$path = '/assets/images/uploads/movies/' . $item_id . '/' . $item_id . '_' . $image_id . '.' . $file_extension;
+			$file = $this->opus->config->base_path_absolute . $path;
+
+			file_put_contents($file, file_get_contents($content));
+
+			$this->opus->log->write('info', 'Uploaded ' . $file);
 		}
 
 	}

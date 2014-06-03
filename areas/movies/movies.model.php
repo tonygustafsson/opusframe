@@ -9,8 +9,9 @@
 			//Settings for the data, both on the database side and html form side
 			$this->data_model = array(
 				'db_table' => 'movies',
-				'max_images' => 3,
-				'max_files' => 0,
+				'images_max' => 3,
+				'images_accepted_types' => array('image/gif', 'image/jpeg', 'image/png'),
+				'images_max_size' => 2000000,
 				'fields' => array(
 					'id' => array(
 						'friendly_name' => 'ID',

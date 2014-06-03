@@ -89,8 +89,6 @@
 
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				$data['max_images'] = $this->model->data_model['max_images'];
-
 				load::view('edit', $data);
 			}
 		}
@@ -103,15 +101,21 @@
 			$update_output = $this->opus->database->update($update_settings);
 
 			if (! isset($update_output->form_errors))
-			{
 				$this->opus->load->url('movies');
-			}
 			else
 			{
 				$this->opus->session->set_flash('form_validation', $update_output->form_errors);
 				$this->opus->session->set_flash('form_values', $_POST);
 
 				$this->opus->load->url('movies/edit/' . $_POST['id']);	
+			}
+		}
+
+		public function image_upload()
+		{
+			if ($this->opus->load->is_ajax_request())
+			{
+				$this->opus->form->file_upload('php://input');
 			}
 		}
 
