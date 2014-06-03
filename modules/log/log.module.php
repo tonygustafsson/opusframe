@@ -18,6 +18,9 @@
 			$this->log_time_format = "H:i:s";
 			$this->log_file_method = "a"; //Open for writing only, pointer at the end of the file. Create if not exists.
 			$this->log_history_keep = 7; //Keep log files newer than # days
+
+			if (! file_exists($this->log_path . $this->log_file_name))
+				$this->remove_old_log_files();
 		}
 
 		public function write($level, $message)
@@ -39,9 +42,6 @@
 				$trace = debug_backtrace();
 				$topic = $trace[1]['class'];
 
-				if (! file_exists($this->log_path . $this->log_file_name))
-					$this->remove_old_log_files();
-
 				$message = date($this->log_time_format) . "\t" . $topic . "\t" . $level . "\t" . $message . "\r\n";
 
 				$fp = fopen($this->log_path . $this->log_file_name, $this->log_file_method);
@@ -57,7 +57,10 @@
 
 			foreach($log_files as $log_file) {
 				if (filectime($log_file) < $delete_older_than)
+				{
 					$this->write('info', 'Removing old log file ' . $log_file . ', created at ' . date("Ymd H:i:s", filectime($log_file)));
+					unlink($log_file);
+				}
 			}
 		}
 
