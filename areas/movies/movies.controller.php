@@ -115,7 +115,30 @@
 		{
 			if ($this->opus->load->is_ajax_request())
 			{
-				$this->opus->form->file_upload('php://input');
+				$item_id = $_SERVER['HTTP_X_ITEM_ID'];
+				$image_id = $_SERVER['HTTP_X_IMAGE_ID'];
+				$file_path = $this->opus->config->image_upload_path . 'movies/' . $item_id . '/' . $item_id . '_' . $image_id;
+
+				echo $this->opus->form->image_upload($file_path, 'php://input');
+			}
+		}
+
+		public function image_remove()
+		{
+			if ($this->opus->load->is_ajax_request())
+			{
+				$item_id = $this->opus->url->get_parameter('item_id');
+				$image_id = $this->opus->url->get_parameter('image_id');
+
+				$file_path = $this->opus->config->image_upload_path . 'movies/' . $item_id . '/' . $item_id . '_' . $image_id;
+				$file_array = glob($file_path . '.*');
+
+				if (! empty($file_array))
+				{
+					$image_path = $file_array[0];
+					unlink($image_path);
+					echo 'OK';
+				}
 			}
 		}
 

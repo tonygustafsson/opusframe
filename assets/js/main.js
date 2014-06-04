@@ -40,6 +40,13 @@ function ajaxUploadFile(file, originalFileName, itemID, imageID)
 {
 	var httpRequest = new XMLHttpRequest();
 
+	httpRequest.onreadystatechange = function() {
+		var imageSrc = httpRequest.responseText;
+		var thumbnail = document.getElementById('thumb_' + imageID);
+		
+		thumbnail.src = imageSrc;
+	}
+
 	if (httpRequest.upload)
 	{
 		httpRequest.open("POST", '/opusframe/movies/image_upload', true);
@@ -82,7 +89,6 @@ function handleImageFileSelect(e) {
 	var itemID = uploadArea.getAttribute('data-item-id');
 	var imageID = uploadImage.getAttribute('data-image-id');
 	var outputError = document.getElementById('images_upload_error_' + imageID);
-	var outputSuccess = document.getElementById('images_upload_success_' + imageID);
 	var maxSize = uploadArea.getAttribute('data-max-size');
 	var acceptedFileTypes = fileInput.getAttribute('accept').split(', ');
 
@@ -103,15 +109,18 @@ function handleImageFileSelect(e) {
 	var reader = new FileReader();
 	var fileName = file.name;
 	var thumbnail = this.parentNode.getElementsByClassName('images_upload_thumb')[0];
+	var imageLoadingURL = thumbnail.getAttribute('data-image-loading-url');
 
 	reader.onload = (function(theFile) {
 		return function(e) {
-			thumbnail.src = e.target.result;
-			thumbnail.style.opacity = '.3';
+			thumbnail.src = imageLoadingURL;
 			ajaxUploadFile(theFile, fileName, itemID, imageID);
-			outputSuccess.innerHTML = "Image saved.";
-			outputSuccess.style.display = 'block';
-			thumbnail.style.opacity = '1';
+
+			var nextImageID = parseInt(imageID) + 1;
+			var nextUploader = document.getElementById('images_upload_section_' + nextImageID);
+
+			if (nextUploader !== null)
+			nextUploader.className = 'image_upload';
 		};
 	})(file);
 
@@ -132,4 +141,30 @@ var imageUploadInputs = document.getElementsByClassName('images_upload_input');
 
 for (var i = 0; i < imageUploadInputs.length; i++) {
     imageUploadInputs[i].addEventListener('change', handleImageFileSelect, false);
+}
+
+var removeImagesLinks = document.getElementsByClassName('remove-image-link');
+
+for (var i = 0; i < removeImagesLinks.length; i++) {
+    removeImagesLinks[i].addEventListener('click', function(e) {
+    	e.preventDefault();
+
+    	var url = this.getAttribute('href');
+		var httpRequest = new XMLHttpRequest();
+
+		httpRequest.onreadystatechange = function() {
+			var content = httpRequest.responseText;
+			
+			if (content === "OK") {
+				var movieID = e.srcElement.parentNode.parentNode.getAttribute('data-image-id');
+				var thumbnail = document.getElementById('thumb_' + movieID);
+				var noImageURL = thumbnail.getAttribute('data-no-image-url');
+				thumbnail.src = noImageURL;
+			}
+		}
+
+		httpRequest.open('GET', url);
+		httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+		httpRequest.send();
+    });
 }

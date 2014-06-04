@@ -30,6 +30,10 @@ a {
 	text-align: right;
 }
 
+.hidden {
+	display: none;
+}
+
 #error {
 	background: #D55151;
 	width: 100%;
@@ -112,11 +116,23 @@ input[type=file] {
 	display: none;
 }
 
+.image_upload {
+	position: relative;
+	display: inline;
+}
+
 .images_upload_error {
 	display: none;
 	background: #E27A7A;
 	border-radius: 3px;
 	padding: 1em;
+}
+
+.remove-image-link {
+	position: absolute;
+	top: -26px;
+	left: 22px;
+	cursor: not-allowed;
 }
 
 .images_upload_success {
@@ -131,8 +147,8 @@ input[type=file] {
 }
 
 .images_upload_thumb {
-	max-width: 200px;
-	max-height: 200px;
+	max-width: 150px;
+	max-height: 150px;
 	padding: 1em;
 	cursor: pointer;
 }

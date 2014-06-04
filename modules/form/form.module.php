@@ -165,25 +165,28 @@
 			if ($data_model['images_max'] > 0)
 			{
 				$movie_id = $this->opus->config->url_args[0];
+				$last_image_existed = TRUE;
 
 				$html .= '<section id="image_upload_area" data-item-id="' . $movie_id . '" data-max-size="' . $data_model['images_max_size'] . '">';
+					$html .= '<label for="image_upload_area">Images</label>';
 
 						for ($x = 1; $x <= $data_model['images_max']; $x++)
 						{
-							$file = $this->opus->config->base_path_absolute . '/assets/images/uploads/movies/' . $movie_id . '_' . $x . '.jpg';
-							
-							$thumbs_array = glob($this->opus->config->base_path_absolute . '/assets/images/uploads/movies/' . $movie_id . '/*');
-							foreach ($thumbs_array as $thumb)
-								$thumbs[] = str_replace($_SERVER['DOCUMENT_ROOT'], "", $thumb);
-							
-							$thumbnail = (isset($thumbs[$x - 1])) ? $thumbs[$x - 1] : $this->opus->config->base_url('assets/images/no_pic.png');
+							$thumbs = glob($this->opus->config->image_upload_path . '/movies/' . $movie_id . '/' . $movie_id . '_' . $x . '.*');
+							$thumbnail = (! empty($thumbs)) ? $this->opus->config->path_to_url($thumbs[0]) : $this->opus->config->base_url('assets/images/no_pic.png');
+							$class = ($last_image_existed === FALSE && empty($thumbs)) ? 'hidden' : 'image_upload';
+							$last_image_existed = (! empty($thumbs)) ? TRUE : FALSE;
 
-							$html .= '<section class="image_upload" id="images_upload_section" data-image-id="' . $x . '">';
-								$html .= '<img class="images_upload_thumb" id="thumb_' . $x . '" src="' . $thumbnail . '">';
-								$html .= '<input type="file" id="images_file_upload_' . $x . '" class="images_upload_input" name="images_upload_input" accept="' . implode(', ', $data_model['images_accepted_types']) . '">';
-								$html .= '<output class="images_upload_error" id="images_upload_error_' . $x . '"></output>';
-								$html .= '<output class="images_upload_success" id="images_upload_success_' . $x . '"></output>';
-							$html .= '</section>';
+							$html .= '
+								<section class="' . $class . '" id="images_upload_section_' . $x . '" data-image-id="' . $x . '">
+									<img title="Upload image" class="images_upload_thumb" id="thumb_' . $x . '" src="' . $thumbnail . '" data-image-loading-url="' . $this->opus->config->base_url('assets/images/image_loading.png') . '" data-no-image-url="' .$this->opus->config->base_url('assets/images/no_pic.png') . '">
+									<a title="Remove image" class="remove-image-link" href="' . $this->opus->config->base_url . '/movies/image_remove/item_id=' . $movie_id . '/image_id=' . $x . '">
+										<img src="' . $this->opus->config->base_url('assets/images/remove.png') . '">
+									</a>
+									<input type="file" id="images_file_upload_' . $x . '" class="images_upload_input" name="images_upload_input" accept="' . implode(', ', $data_model['images_accepted_types']) . '">
+									<output class="images_upload_error" id="images_upload_error_' . $x . '"></output>
+								</section>
+							';
 						}
 				$html .= '</section>';
 			}
@@ -290,10 +293,11 @@
 			return (isset($error)) ? $error : NULL;
 		}
 
-		public function file_upload($content)
+		public function image_upload($file_path, $content)
 		{
 			$original_file_name = $_SERVER['HTTP_X_ORIGINAL_FILE_NAME'];
 			$original_file_extension = strtolower(end(explode('.', $original_file_name)));
+			$path = dirname($file_path);
 
 			switch ($original_file_extension)
 			{
@@ -305,14 +309,16 @@
 					$file_extension = 'jpg';
 			}
 
-			$item_id = $_SERVER['HTTP_X_ITEM_ID'];
-			$image_id = $_SERVER['HTTP_X_IMAGE_ID'];
-			$path = '/assets/images/uploads/movies/' . $item_id . '/' . $item_id . '_' . $image_id . '.' . $file_extension;
-			$file = $this->opus->config->base_path_absolute . $path;
+			if (! file_exists($path))
+				mkdir($path);
+
+			$file = $file_path . '.' . $file_extension;
 
 			file_put_contents($file, file_get_contents($content));
 
 			$this->opus->log->write('info', 'Uploaded ' . $file);
+
+			return $this->opus->config->path_to_url($file);
 		}
 
 	}

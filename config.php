@@ -43,6 +43,8 @@
 			$this->base_url = $this->remove_trailing_slash('http://' . $_SERVER['HTTP_HOST'] . str_replace(basename($_SERVER['PHP_SELF']), "", $_SERVER['PHP_SELF']));
 			$this->base_path = $this->remove_trailing_slash(str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']));
 			$this->base_path_absolute = $this->remove_trailing_slash($_SERVER['DOCUMENT_ROOT'] . $this->base_path);
+			$this->image_upload_path = $this->base_path_absolute . '/assets/images/uploads/';
+			$this->image_upload_url = $this->base_url . '/assets/images/uploads/';
 
 			$path = str_replace($this->base_path, "", parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH));
 			$path = $this->remove_leading_slash($path);	
@@ -108,6 +110,14 @@
 		public function base_url($url)
 		{
 			return $this->base_url . '/' . $url;
+		}
+
+		public function path_to_url($path)
+		{
+			//Converts a physical path to a URL
+			$url = str_replace($_SERVER['DOCUMENT_ROOT'], "", $path);
+
+			return $url;
 		}
 	}
 ?>
