@@ -130,6 +130,17 @@
 			exit;
 		}
 
+		public function image($path)
+		{
+			//Checks if the image exists and delivers it, if not, deliver a default image
+			$path = $this->opus->config->base_path_absolute . '/' . $path;
+
+			if (file_exists($path))
+				return $this->opus->config->path_to_url($path);
+			else
+				return $this->opus->config->path_to_url($this->opus->config->image_missing);
+		}
+
 		public function require_modules($modules)
 		{
 			foreach ($modules as $module)

@@ -173,13 +173,13 @@
 						for ($x = 1; $x <= $data_model['images_max']; $x++)
 						{
 							$thumbs = glob($this->opus->config->image_upload_path . '/movies/' . $movie_id . '/' . $movie_id . '_' . $x . '.*');
-							$thumbnail = (! empty($thumbs)) ? $this->opus->config->path_to_url($thumbs[0]) : $this->opus->config->base_url('assets/images/no_pic.png');
+							$thumbnail = (! empty($thumbs)) ? $this->opus->config->path_to_url($thumbs[0]) : $this->opus->config->path_to_url($this->opus->config->image_add);
 							$class = ($last_image_existed === FALSE && empty($thumbs)) ? 'hidden' : 'image_upload';
 							$last_image_existed = (! empty($thumbs)) ? TRUE : FALSE;
 
 							$html .= '
 								<section class="' . $class . '" id="images_upload_section_' . $x . '" data-image-id="' . $x . '">
-									<img title="Upload image" class="images_upload_thumb" id="thumb_' . $x . '" src="' . $thumbnail . '" data-image-loading-url="' . $this->opus->config->base_url('assets/images/image_loading.png') . '" data-no-image-url="' .$this->opus->config->base_url('assets/images/no_pic.png') . '">
+									<img title="Upload image" class="images_upload_thumb" id="thumb_' . $x . '" src="' . $thumbnail . '" data-image-loading-url="' . $this->opus->config->path_to_url($this->opus->config->image_loading) . '" data-no-image-url="' .$this->opus->config->path_to_url($this->opus->config->image_add) . '">
 									<a title="Remove image" class="remove-image-link" href="' . $this->opus->config->base_url . '/movies/image_remove/item_id=' . $movie_id . '/image_id=' . $x . '">
 										<img src="' . $this->opus->config->base_url('assets/images/remove.png') . '">
 									</a>

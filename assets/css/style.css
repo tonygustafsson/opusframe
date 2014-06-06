@@ -9,12 +9,17 @@ h1 {
 	padding: 1em 0;
 }
 
+a {
+	color: #000;
+}
+
 table {
 	width: 100%;
 }
 
-a {
-	color: #000;
+#movie_table img {
+	width: 100px;
+	height: 150px;
 }
 
 #pagination-links {

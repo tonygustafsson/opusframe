@@ -10,10 +10,12 @@
 </form>
 
 <h2>List movies</h2>
+
 <p><?=$movies->total_rows?> movies found.</p>
 
-<table>
+<table id="movie_table">
 	<tr>
+		<th></th>
 		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'name', 'order' => $sort_order_link)))?>">Name</a></th>
 		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'genre', 'order' => $sort_order_link)))?>">Genre</a></th>
 		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'rating', 'order' => $sort_order_link)))?>">Rating</a></th>
@@ -27,6 +29,7 @@
 		while ($movie = mysqli_fetch_object($movies))
 		{
 			echo '<tr>';
+				echo '<td><img src="' . load::image('assets/images/uploads/movies/' . $movie->id . '/' . $movie->id . '_1.jpg') . '"></td>';
 				echo '<td>' . $movie->name . '</td>';
 				echo '<td>' . $movie->genre . '</td>';
 				echo '<td>' . $movie->rating . '</td>';

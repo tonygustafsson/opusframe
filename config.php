@@ -45,6 +45,9 @@
 			$this->base_path_absolute = $this->remove_trailing_slash($_SERVER['DOCUMENT_ROOT'] . $this->base_path);
 			$this->image_upload_path = $this->base_path_absolute . '/assets/images/uploads/';
 			$this->image_upload_url = $this->base_url . '/assets/images/uploads/';
+			$this->image_missing = $this->base_path_absolute . '/assets/images/image_missing.png';
+			$this->image_loading = $this->base_path_absolute . '/assets/images/image_loading.png';
+			$this->image_add = $this->base_path_absolute . '/assets/images/image_add.png';
 
 			$path = str_replace($this->base_path, "", parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH));
 			$path = $this->remove_leading_slash($path);	
