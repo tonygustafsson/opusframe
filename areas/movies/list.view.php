@@ -16,12 +16,12 @@
 <table id="movie_table">
 	<tr>
 		<th></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'name', 'order' => $sort_order_link)))?>">Name</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'genre', 'order' => $sort_order_link)))?>">Genre</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'rating', 'order' => $sort_order_link)))?>">Rating</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'seen', 'order' => $sort_order_link)))?>">Seen</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'media_type', 'order' => $sort_order_link)))?>">Media type</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'recommended', 'order' => $sort_order_link)))?>">Recommended</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'name', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Name</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'genre', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Genre</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'rating', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Rating</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'seen', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Seen</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'media_type', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Media type</a></th>
+		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'recommended', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Recommended</a></th>
 		<th></th>
 	</tr>
 
@@ -29,8 +29,8 @@
 		while ($movie = mysqli_fetch_object($movies))
 		{
 			echo '<tr>';
-				echo '<td><img src="' . load::image('assets/images/uploads/movies/' . $movie->id . '/' . $movie->id . '_1.jpg') . '"></td>';
-				echo '<td>' . $movie->name . '</td>';
+				echo '<td class="center"><img src="' . load::image('assets/images/uploads/movies/' . $movie->id . '/' . $movie->id . '_1.jpg') . '"></td>';
+				echo '<td><a href="' . $this->opus->config->base_url('movies/edit/' . $movie->id) . '">' . $movie->name . '</a></td>';
 				echo '<td>' . $movie->genre . '</td>';
 				echo '<td>' . $movie->rating . '</td>';
 				echo '<td>' . date('Y-m-d', strtotime($movie->seen)) . '</td>';
@@ -38,9 +38,9 @@
 				echo '<td>' . (($movie->recommended == 1) ? 'Yes' : 'No') . '</td>';
 				if ($this->opus->auth->user['logged_in'] === TRUE)
 				{
-					echo '	<td>
-								<a href="' . $this->opus->config->base_url('movies/edit/' . $movie->id) . '">Edit</a>
-								<a href="' . $this->opus->config->base_url('movies/remove/' . $movie->id) . '">Remove</a>
+					echo '	<td class="center">
+								<a class="no-underline" href="' . $this->opus->config->base_url('movies/edit/' . $movie->id) . '"><span class="icon-pencil"></span></a>
+								<a class="no-underline" href="' . $this->opus->config->base_url('movies/remove/' . $movie->id) . '"><span class="icon-remove"></span></a>
 							</td>';
 					echo '</tr>';
 				}

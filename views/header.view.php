@@ -1,7 +1,8 @@
 <html>
 <head>
 	<title><?= $this->opus->config->site_name ?></title>
-	<?php load::css('style.css') ?>
+	<?php load::css('base.css') ?>
+	<?php load::css('custom.css') ?>
 </head>
 
 <body>
@@ -19,11 +20,11 @@
 	<?php
 		if (isset($this->opus->auth->user['logged_in']) && $this->opus->auth->user['logged_in'] === TRUE)
 		{
-			echo '<p class="right"><a href="' . $this->opus->config->base_url('auth/logout') . '">Log out, ' . $this->opus->auth->get_first_name() . '</a></p>';
+			echo '<p class="right"><span class="icon-lock"> <a href="' . $this->opus->config->base_url('auth/logout') . '">Log out, ' . $this->opus->auth->get_first_name() . '</a></p>';
 		}
 		else
 		{
-			echo '<p class="right"><a href="' . $this->opus->config->base_url('auth/login') . '">Log in</a>';
+			echo '<p class="right"><span class="icon-lock"> <a href="' . $this->opus->config->base_url('auth/login') . '">Log in</a>';
 			echo ' <a href="' . $this->opus->config->base_url('auth/register') . '">Register</a></p>';
 		}
 	?>

@@ -1,22 +1,3 @@
-body {
-	background: #fafafa;
-	color: #000;
-	width: 80%;
-	margin: 0 auto;
-}
-
-h1 {
-	padding: 1em 0;
-}
-
-a {
-	color: #000;
-}
-
-table {
-	width: 100%;
-}
-
 #movie_table img {
 	width: 100px;
 	height: 150px;
@@ -29,14 +10,6 @@ table {
 
 #pagination-links a {
 	text-decoration: none;
-}
-
-.right {
-	text-align: right;
-}
-
-.hidden {
-	display: none;
 }
 
 #error {
@@ -64,46 +37,6 @@ table {
 	font-style: italic;
 }
 
-th {
-	text-align: left;
-	background: #f0f0f0;
-}
-
-tr:nth-child(odd) {
-	background: #f3f3f3;
-}
-
-label {
-	display: block;
-	font-weight: bold;
-	padding-top: 1em;
-}
-
-label:after {
-	content: ":";
-}
-
-input[type=text], input[type=email], input[type=url], input[type=password] {
-	width: 400px;
-	padding: .5em;
-}
-
-input[type=radio], input[type=checkbox] {
-	margin-left: 1em;
-}
-
-input[type=number], input[type=date] {
-	width: 200px;
-	padding: .5em;
-}
-
-input[type=submit] {
-	padding: 1em;
-	text-transform: uppercase;
-	display: block;
-	margin-top: 1em;
-}
-
 #form-search {
 	text-align: right;
 }
@@ -115,10 +48,6 @@ input[type=submit] {
 #form-search input[type=submit] {
 	display: inline;
 	margin: 0;
-}
-
-input[type=file] {
-	display: none;
 }
 
 .image_upload {
@@ -161,4 +90,51 @@ input[type=file] {
 #debug {
 	background: #DBABAB;
 	padding: 1em;
+}
+
+td img {
+	border: 1px #aaa solid;
+}
+
+/* ICONS */
+
+@font-face {
+	font-family: 'icomoon';
+	src:url('../../fonts/icomoon.eot?mr3ar1');
+	src:url('../../fonts/icomoon.eot?#iefixmr3ar1') format('embedded-opentype'),
+		url('../../fonts/icomoon.woff?mr3ar1') format('woff'),
+		url('../../fonts/icomoon.ttf?mr3ar1') format('truetype'),
+		url('../../fonts/icomoon.svg?mr3ar1#icomoon') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+	font-family: 'icomoon';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-pencil:before {
+	content: "\e600";
+}
+.icon-disk:before {
+	content: "\e601";
+}
+.icon-lock:before {
+	content: "\e602";
+}
+.icon-remove:before {
+	content: "\e603";
+}
+.icon-menu:before {
+	content: "\e604";
 }
