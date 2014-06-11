@@ -11,6 +11,7 @@
 		public function index()
 		{
 			$get_settings['data_model'] = $this->model->data_model;
+			$get_settings['order_by'] = 'name ASC';
 			$get_settings['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 			$get_settings['get_total_rows'] = TRUE;
 
@@ -54,6 +55,9 @@
 
 			if (! isset($insert_output->form_errors))
 			{
+				//Move temporary uploads to the item ID folder
+				$this->opus->form->save_temp_images($this->model->data_model['db_table'], $insert_output->insert_id);
+
 				$this->opus->load->url('movies');
 			}
 			else
@@ -111,6 +115,25 @@
 			}
 		}
 
+		public function remove()
+		{
+			$id = $this->opus->config->url_args[0];
+
+			if (! empty($id))
+			{
+				$delete_settings['data_model'] = $this->model->data_model;
+				$delete_settings['where']['id'] = $id;
+
+				//Remove the movie
+				$remove_output = $this->opus->database->delete($delete_settings);
+
+				//Remove the images
+				$this->opus->form->image_remove($id);
+
+				$this->opus->load->url('movies');
+			}
+		}
+
 		public function image_upload()
 		{
 			if ($this->opus->load->is_ajax_request())
@@ -130,29 +153,7 @@
 				$item_id = $this->opus->url->get_parameter('item_id');
 				$image_id = $this->opus->url->get_parameter('image_id');
 
-				$file_path = $this->opus->config->image_upload_path . 'movies/' . $item_id . '/' . $item_id . '_' . $image_id;
-				$file_array = glob($file_path . '.*');
-
-				if (! empty($file_array))
-				{
-					$image_path = $file_array[0];
-					unlink($image_path);
-					echo 'OK';
-				}
-			}
-		}
-
-		public function remove()
-		{
-			$id = $this->opus->config->url_args[0];
-
-			if (! empty($id))
-			{
-				$delete_settings['data_model'] = $this->model->data_model;
-				$delete_settings['where']['id'] = $id;
-				$this->opus->database->delete($delete_settings);
-
-				$this->opus->load->url('movies');
+				echo $this->opus->form->image_remove($item_id, $image_id);
 			}
 		}
 
