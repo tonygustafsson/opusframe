@@ -16,7 +16,7 @@
 								);
 
 			if ($this->db->connect_errno > 0)
-			    die('Unable to connect to database [' . $this->db->connect_error . ']');
+			    exit('Unable to connect to database [' . $this->db->connect_error . ']');
 		}
 
 		public function get_result($get_settings)
@@ -197,9 +197,6 @@
 
 		public function update($update_settings)
 		{
-			//Clean the input from dangerous data
-			$_POST = $this->xss_clean($_POST);
-
 			if ($this->opus->load->is_module_loaded('form'))
 			{
 				//Validate the input and add errors to list
@@ -209,14 +206,17 @@
 			if (! isset($this->db->form_errors))
 			{
 				$changes = "";
+				$val_types = "";
+				$value_bindings = array();
 				$x = 0;
 
 				foreach ($update_settings['fields'] as $column)
 				{
 					if (isset($_POST[$column]))
 					{
-						$changes .= $column . ' = ';
-						$changes .= (is_numeric($_POST[$column])) ? $_POST[$column] : '"' . $_POST[$column] . '"';
+						$changes .= $column . ' = ?';
+						$value_bindings[] = $_POST[$column];
+						$val_types .= (is_numeric($_POST[$column])) ? "i" : "s";
 
 						if ($x < count($update_settings['fields']) - 1)
 						{
@@ -230,14 +230,24 @@
 				if (isset($update_settings['data_model']['db_table']) && ! empty($changes))
 				{
 					$sql = 'UPDATE ' . $update_settings['data_model']['db_table'] . ' SET ' . $changes;
-					$sql .= ' WHERE ' . key($update_settings['where']) . ' = ';
-					$sql .= is_numeric(current($update_settings['where'])) ? current($update_settings['where']) : '"' . current($update_settings['where']) . '"';
+					$sql .= ' WHERE ' . key($update_settings['where']) . ' = ?';
+					$val_types .= is_numeric(current($update_settings['where'])) ? "i" : "s";
 
 					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
-					$result = $this->db->query($sql);
 
-					if (! $result)
-					    die('Database error: '. $this->db->error);
+					$value_bindings[] = array_values($update_settings['where'])[0];
+					array_unshift($value_bindings, $val_types);
+
+					if (! $statement = $this->db->prepare($sql))
+						exit($this->db->error);
+
+					if (! call_user_func_array(array($statement, 'bind_param'), $this->ref_values($value_bindings)))
+						exit($statement->error);
+
+					if (! $statement->execute())
+						exit($statement->error);
+
+					$statement->close();
 
 				}
 			}
@@ -247,20 +257,54 @@
 
 		public function delete($delete_settings)
 		{
-			//Clean the input from dangerous data
-			$_POST = $this->xss_clean($_POST);
-			
-			$sql = "DELETE FROM " . $delete_settings['data_model']['db_table'];
-			$sql .= ' WHERE ' . key($delete_settings['where']) . ' = ';
-			$sql .= is_numeric(current($delete_settings['where'])) ? current($delete_settings['where']) : '"' . current($delete_settings['where']) . '"';
+			$sql = "DELETE FROM " . $delete_settings['data_model']['db_table'] . " WHERE " . key($delete_settings['where']) . " = ?";
+			$val_type = is_numeric($delete_settings['where']) ? 'i' : 's';
+
+			if (! $statement = $this->db->prepare($sql))
+				exit($this->db->error);
+
+			if (! $statement->bind_param($val_type, current($delete_settings['where'])))
+				exit($statement->error);
+
+			if (! $statement->execute())
+				exit($statement->error);
+
+			$statement->close();
 
 			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
-			$result = $this->db->query($sql);
 
-			if (! $result)
-				die('Database error: '. $this->db->error);
-				
 			return $this->db;
+		}
+
+		public function ref_values($arr){
+			$refs = array();
+
+			foreach($arr as $key => $value)
+				$refs[$key] = &$arr[$key];
+
+			return $refs;
+		}
+
+		private function get_bind_params($parameters)
+		{
+			$parameters;
+			$counter = 0;
+			$bind_params = "";
+
+			foreach ($parameters as $parameter)
+			{
+				if (isset($_POST[$parameter]))
+				{
+					$bind_params .= $_POST[$parameter];
+
+					if ($counter < count($parameters) - 1)
+						$bind_params .= ", ";
+				}
+
+				$counter++;
+			}
+
+			return $bind_params;
 		}
 
 		private function xss_clean($input)
