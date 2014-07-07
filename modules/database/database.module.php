@@ -21,23 +21,20 @@
 
 		public function get_result($get_settings)
 		{
-			$select = $this->xss_clean($get_settings['select']);
-			$where = (isset($get_settings['where']) && $get_settings['where'] !== FALSE) ? $this->xss_clean($get_settings['where']) : FALSE;
-			$where_like = (isset($get_settings['where_like']) && $get_settings['where_like'] !== FALSE) ? $this->xss_clean($get_settings['where_like']) : FALSE;
+			$where = (isset($get_settings['where']) && $get_settings['where'] !== FALSE) ? $get_settings['where'] : FALSE;
+			$where_like = (isset($get_settings['where_like']) && $get_settings['where_like'] !== FALSE) ? $get_settings['where_like'] : FALSE;
 			$order_by = (isset($get_settings['order_by']) && $get_settings['order_by'] !== FALSE) ? $get_settings['order_by'] : FALSE;
 			$limit = (isset($get_settings['limit_offset']) && isset($get_settings['limit_count'])) ? $get_settings['limit_offset'] . ', ' . $get_settings['limit_count'] : FALSE;
 
 			$sql = 'SELECT ';
 			$x = 0;
 
-			foreach ($select as $column)
+			foreach ($get_settings['select'] as $column)
 			{
 				$sql .= $column;
 
-				if ($x < count($select) - 1)
-				{
+				if ($x < count($get_settings['select']) - 1)
 					$sql .= ', ';
-				}
 
 				$x++;
 			}
@@ -57,14 +54,10 @@
 			}
 
 			if ($order_by !== FALSE)
-			{
 				$sql .= ' ORDER BY ' . $order_by;
-			}
 
 			if ($limit !== FALSE)
-			{
 				$sql .= ' LIMIT ' . $limit;
-			}
 
 			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 			$result = $this->db->query($sql);
@@ -102,9 +95,6 @@
 
 		public function get_row($get_settings)
 		{
-			$get_settings['select'] = $this->xss_clean($get_settings['select']);
-			$get_settings['where'] = $this->xss_clean($get_settings['where']);
-
 			$sql = 'SELECT ';
 			$x = 0;
 
@@ -113,9 +103,7 @@
 				$sql .= $column;
 
 				if ($x < count($get_settings['select']) - 1)
-				{
 					$sql .= ', ';
-				}
 
 				$x++;
 			}
@@ -134,21 +122,8 @@
 			return $result->fetch_assoc();
 		}
 
-		public function query($sql)
-		{
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
-
-			if (! $result = $this->db->query($sql))
-			{
-			    die('Database error: '. $this->db->error);
-			}
-		}
-
 		public function insert($insert_settings)
 		{
-			//Clean the input from dangerous data
-			$_POST = $this->xss_clean($_POST);
-
 			if ($this->opus->load->is_module_loaded('form'))
 			{
 				//Validate the input and add errors to list
@@ -158,20 +133,24 @@
 			if (! isset($this->db->form_errors))
 			{
 				$keys = "";
-				$values = "";
+				$changes = "";
+				$values = array();
 				$x = 1;
+				$value_types = "";
 
 				foreach ($insert_settings['data_model']['fields'] as $column_name => $column_settings)
 				{
 					if (in_array($column_settings['form_name'], $insert_settings['fields']) && isset($_POST[$column_settings['form_name']]))
 					{
 						$keys .= $column_name;
-						$values .= (is_numeric($_POST[$column_name])) ? $_POST[$column_name] : '"' . $_POST[$column_name] . '"';
+						$changes .= '?';
+						$values[] = $_POST[$column_name];
+						$value_types .= is_numeric($_POST[$column_name]) ? "i" : "s";
 
 						if ($x < count($insert_settings['fields']))
 						{
 							$keys .= ", ";
-							$values .= ", ";
+							$changes .= ", ";
 						}
 
 						$x++;
@@ -182,13 +161,10 @@
 
 				if (isset($insert_settings['data_model']['db_table']) && ! empty($keys) && ! empty($values))
 				{
-					$sql = 'INSERT INTO ' . $insert_settings['data_model']['db_table'] . ' (' . $keys . ') VALUES (' . $values . ');';
+					$sql = 'INSERT INTO ' . $insert_settings['data_model']['db_table'] . ' (' . $keys . ') VALUES (' . $changes . ');';
 					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 
-					$result = $this->db->query($sql);
-
-					if (! $result)
-					    die('Database error: '. $this->db->error);
+					$this->make_statement($sql, $values, $value_types);
 				}
 			}
 
@@ -206,8 +182,8 @@
 			if (! isset($this->db->form_errors))
 			{
 				$changes = "";
-				$val_types = "";
-				$value_bindings = array();
+				$value_types = "";
+				$values = array();
 				$x = 0;
 
 				foreach ($update_settings['fields'] as $column)
@@ -215,13 +191,11 @@
 					if (isset($_POST[$column]))
 					{
 						$changes .= $column . ' = ?';
-						$value_bindings[] = $_POST[$column];
-						$val_types .= (is_numeric($_POST[$column])) ? "i" : "s";
+						$values[] = $_POST[$column];
+						$value_types .= (is_numeric($_POST[$column])) ? "i" : "s";
 
 						if ($x < count($update_settings['fields']) - 1)
-						{
 							$changes .= ", ";
-						}
 					}
 
 					$x++;
@@ -231,24 +205,13 @@
 				{
 					$sql = 'UPDATE ' . $update_settings['data_model']['db_table'] . ' SET ' . $changes;
 					$sql .= ' WHERE ' . key($update_settings['where']) . ' = ?';
-					$val_types .= is_numeric(current($update_settings['where'])) ? "i" : "s";
+					$value_types .= is_numeric(current($update_settings['where'])) ? "i" : "s";
 
 					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 
-					$value_bindings[] = array_values($update_settings['where'])[0];
-					array_unshift($value_bindings, $val_types);
+					$values[] = array_values($update_settings['where'])[0];
 
-					if (! $statement = $this->db->prepare($sql))
-						exit($this->db->error);
-
-					if (! call_user_func_array(array($statement, 'bind_param'), $this->ref_values($value_bindings)))
-						exit($statement->error);
-
-					if (! $statement->execute())
-						exit($statement->error);
-
-					$statement->close();
-
+					$this->make_statement($sql, $values, $value_types);
 				}
 			}
 
@@ -258,68 +221,42 @@
 		public function delete($delete_settings)
 		{
 			$sql = "DELETE FROM " . $delete_settings['data_model']['db_table'] . " WHERE " . key($delete_settings['where']) . " = ?";
-			$val_type = is_numeric($delete_settings['where']) ? 'i' : 's';
+			$values = array(current($delete_settings['where']));
+			$value_types = is_numeric($delete_settings['where']) ? 'i' : 's';
 
-			if (! $statement = $this->db->prepare($sql))
-				exit($this->db->error);
-
-			if (! $statement->bind_param($val_type, current($delete_settings['where'])))
-				exit($statement->error);
-
-			if (! $statement->execute())
-				exit($statement->error);
-
-			$statement->close();
+			$this->make_statement($sql, $values, $value_types);
 
 			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
 
 			return $this->db;
 		}
 
-		public function ref_values($arr){
-			$refs = array();
+		private function make_statement($sql, $values, $value_types) {
+			/* Create a bind_param with array values instead of strings */
 
-			foreach($arr as $key => $value)
-				$refs[$key] = &$arr[$key];
+			//Prepare the statement
+			if (! $statement = $this->db->prepare($sql))
+				exit($this->db->error);
 
-			return $refs;
-		}
+			//Add the value types to the array, which could look like "ssiis"
+			array_unshift($values, $value_types);
 
-		private function get_bind_params($parameters)
-		{
-			$parameters;
-			$counter = 0;
-			$bind_params = "";
+			//To use call_user_func_array, we need to pass the array by reference
+			$reference_array = array();
 
-			foreach ($parameters as $parameter)
-			{
-				if (isset($_POST[$parameter]))
-				{
-					$bind_params .= $_POST[$parameter];
+			foreach($values as $key => $value)
+				$reference_array[$key] = &$values[$key];
 
-					if ($counter < count($parameters) - 1)
-						$bind_params .= ", ";
-				}
+			//Make the bind_param
+			if (! call_user_func_array(array($statement, 'bind_param'), $reference_array))
+				exit($statement->error);
 
-				$counter++;
-			}
+			//Execute the query
+			if (! $statement->execute())
+				exit($statement->error);
 
-			return $bind_params;
-		}
-
-		private function xss_clean($input)
-		{
-			$output = array();
-
-			foreach ($input as $key => $val)
-			{
-				$val = mysql_real_escape_string($val);
-				$val = htmlspecialchars($val, ENT_SUBSTITUTE, $this->xss_encoding);
-
-				$output[$key] = $val;
-			}
-
-			return $output;
+			//We are done here...
+			$statement->close();
 		}
 		
 	}
