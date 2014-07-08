@@ -17,7 +17,20 @@
 			$this->load = new load();
 			$this->load->auto_load();
 
-			if ($this->prevent_controller_load === FALSE)
+			$area_name = $this->config->area_name;
+			$method_name = $this->config->method_name;
+
+			//Load the method from the module if it exists and is accessible, if not - load controller
+			if (
+				isset($this->$area_name)
+				&& method_exists($this->$area_name, $method_name)
+				&& isset($this->$area_name->url_accessible)
+				&& in_array($method_name, $this->$area_name->url_accessible)
+			)
+			{
+				$this->$area_name->$method_name();
+			}
+			else if ($this->prevent_controller_load === FALSE)
 			{
 				$this->load->controller($this->config->path);
 			}

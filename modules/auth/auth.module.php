@@ -59,23 +59,17 @@
 			$is_restricted = $this->is_restricted($this->opus->config->area_name, $this->opus->config->method_name);
 			$this->opus->prevent_controller_load = $is_restricted;
 
-			if ($this->opus->config->area_name == $this->module_path)
-			{
-				//Redirect routing to this module
-				$method_name = $this->opus->config->method_name;
-				if (method_exists($this, $method_name))
-				{
-					$this->opus->prevent_controller_load = TRUE;
-					$this->$method_name();
-				}	
-			}
-			else if ($is_restricted && $this->user['logged_in'] !== TRUE)
+			//Specify which methods can be loaded through a URL
+			$this->url_accessible = array('login', 'login_post', 'register', 'register_post', 'activation',
+										  'forgot_password', 'forgot_password_post', 'reset_password',
+										  'reset_password_post', 'logout');
+
+			//Om URLen inte finns behöver du inte loginrutan
+			if ($this->opus->config->area_name != $this->module_path && $is_restricted && $this->user['logged_in'] !== TRUE)
 			{
 				//If it's not a part of the auth module and it's restricted, redirect to login
 				if ($this->opus->config->area_name != $this->module_path)
-				{
 					$_SESSION[$this->session_prev_url_field] = $this->opus->config->path;
-				}
 
 				$make_settings['wanted_fields'] =  array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
