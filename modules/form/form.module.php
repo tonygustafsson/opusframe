@@ -4,9 +4,11 @@
 		public function __construct()
 		{
 			$this->opus =& opus::$instance;
+
+			$this->url_accessible = array('filter');
 		}
 
-		function make($data_model, $settings)
+		public function make($data_model, $settings)
 		{
 			$wanted_fields = $settings['wanted_fields'] ?: FALSE;
 			$values = (isset($settings['values']) && count($settings['values']) > 0) ? $settings['values'] : FALSE;
@@ -197,13 +199,49 @@
 			return $html;
 		}
 
-		function to_date_format($input)
+		private function to_date_format($input)
 		{
 			$timestamp = strtotime($input);
 			return date('Y-m-d', $timestamp);
 		}
 
-		function validate($data_model)
+		public function make_filters($data_model, $fields)
+		{
+			$html = '<form method="post" action="' . $this->opus->config->base_url('form/filter') . '">';
+
+			foreach ($fields as $field => $filter_type)
+			{
+				switch ($filter_type)
+				{
+					case "checkboxes":
+					{
+						foreach ($data_model['fields'][$field]['fixed_values'] as $key => $value)
+						{
+							$html .= '<input type="checkbox" name="' . $key . '">' . $value . '<br>';
+						}
+					}
+				}
+			}
+
+			$html .= '<input type="submit" value="Filter">';
+			$html .= '</form>';
+
+			return $html;
+		}
+
+		public function filter()
+		{
+			$url = "";
+
+			foreach ($_POST as $key => $val)
+			{
+				$url .= $key . '/';
+			}
+
+			//Redirect
+		}
+
+		public function validate($data_model)
 		{
 			foreach ($data_model['fields'] as $field)
 			{
@@ -299,7 +337,8 @@
 		public function image_upload($file_path, $content)
 		{
 			$original_file_name = $_SERVER['HTTP_X_ORIGINAL_FILE_NAME'];
-			$original_file_extension = strtolower(end(explode('.', $original_file_name)));
+			$original_file_parts = explode('.', $original_file_name);
+			$original_file_extension = strtolower(end($original_file_parts));
 			$path = dirname($file_path);
 
 			switch ($original_file_extension)

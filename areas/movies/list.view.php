@@ -1,6 +1,6 @@
 <?php
-	if (! load::is_ajax_request()) {
-		load::view('header', $data);
+	if (! $this->opus->load->is_ajax_request()) {
+		$this->opus->load->view('header', $data);
 	}
 ?>
 
@@ -12,6 +12,13 @@
 <h2>List movies</h2>
 
 <p><?=$movies->total_rows?> movies found.</p>
+
+<?php
+	foreach ($filters as $filter)
+	{
+		echo $filter;
+	}
+?>
 
 <table id="movie_table">
 	<tr>
@@ -29,7 +36,7 @@
 		while ($movie = mysqli_fetch_object($movies))
 		{
 			echo '<tr>';
-				echo '<td class="center"><img src="' . load::image('assets/images/uploads/movies/' . $movie->id . '/' . $movie->id . '_1.jpg') . '"></td>';
+				echo '<td class="center"><img src="' . $this->opus->load->image('assets/images/uploads/movies/' . $movie->id . '/' . $movie->id . '_1.jpg') . '"></td>';
 				echo '<td><a href="' . $this->opus->config->base_url('movies/edit/' . $movie->id) . '">' . $movie->name . '</a></td>';
 				echo '<td>' . $movie->genre . '</td>';
 				echo '<td>' . $movie->rating . '</td>';
@@ -59,7 +66,7 @@
 </p>
 
 <?php
-	if (! load::is_ajax_request()) {
-		load::view('footer', $data);
+	if (! $this->opus->load->is_ajax_request()) {
+		$this->opus->load->view('footer', $data);
 	}
 ?>

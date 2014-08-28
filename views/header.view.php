@@ -1,8 +1,8 @@
 <html>
 <head>
 	<title><?= $this->opus->config->site_name ?></title>
-	<?php load::css('base.css') ?>
-	<?php load::css('custom.css') ?>
+	<?php $this->opus->load->css('base.css') ?>
+	<?php $this->opus->load->css('custom.css') ?>
 </head>
 
 <body>

@@ -16,6 +16,7 @@
 			$this->restricted['movies/index'] = FALSE;
 			$this->restricted['movies/sort'] = FALSE;
 			$this->restricted['movies/search'] = FALSE;
+			$this->restricted['form/filter'] = FALSE;
 
 			$this->require_user_activation = TRUE; //If true, the user has to activate his user via email
 
@@ -74,7 +75,7 @@
 				$make_settings['wanted_fields'] =  array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				load::view('login', $data);
+				$this->opus->load->view('login', $data);
 			}
 		}
 
@@ -83,7 +84,7 @@
 			$make_settings['wanted_fields'] = array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
 			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			load::view('login', $data);
+			$this->opus->load->view('login', $data);
 		}
 
 		public function login_post()
@@ -127,7 +128,7 @@
 
 			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			load::view('register', $data);
+			$this->opus->load->view('register', $data);
 		}
 
 		public function register_post()
@@ -237,7 +238,7 @@
 
 			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			load::view('forgot_password', $data);
+			$this->opus->load->view('forgot_password', $data);
 		}
 
 		public function forgot_password_post()
@@ -298,7 +299,7 @@
 
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				load::view('reset_password', $data);
+				$this->opus->load->view('reset_password', $data);
 			}
 			else
 			{

@@ -1,8 +1,6 @@
 <?php
 	class config
 	{
-		public static $site_name;
-
 		function __construct()
 		{
 			$this->site_name = "Movie Database";
@@ -16,7 +14,8 @@
 					'form',
 					'database',
 					'auth',
-					'url'
+					'url',
+					'instagram'
 				);
 
 			$this->cache = array(

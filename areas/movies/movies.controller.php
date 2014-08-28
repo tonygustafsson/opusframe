@@ -21,6 +21,9 @@
 			if (! empty($this->opus->url->get_parameter('search')))
 				$get_settings['where_like']['name'] = $this->opus->url->get_parameter('search');
 
+			$filter_fields = array('genre' => 'checkboxes');
+			$data['filters'][] = $this->opus->form->make_filters($this->model->data_model, $filter_fields);
+
 			$pagination_page = (! empty($this->opus->url->get_parameter('page'))) ? $this->opus->url->get_parameter('page') : 1;
 			$get_settings['limit_count'] = 5;
 			$get_settings['limit_offset'] = ($pagination_page - 1) * $get_settings['limit_count'];
@@ -31,7 +34,7 @@
 			$this->opus->pagination = $this->opus->load->module('pagination');
 			$data['pagination_links'] = $this->opus->pagination->make_links($data['movies']->total_rows);
 
-			load::view('list', $data);
+			$this->opus->load->view('list', $data);
 		}
 
 		public function create()
@@ -42,7 +45,7 @@
 
 			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			load::view('create', $data);
+			$this->opus->load->view('create', $data);
 		}
 		
 		public function create_post()
@@ -93,7 +96,7 @@
 
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				load::view('edit', $data);
+				$this->opus->load->view('edit', $data);
 			}
 		}
 

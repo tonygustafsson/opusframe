@@ -1,6 +1,6 @@
 <?php
-	if (! load::is_ajax_request()) {
-		load::view('header', $data);
+	if (! $this->opus->load->is_ajax_request()) {
+		$this->opus->load->view('header', $data);
 	}
 ?>
 
@@ -15,7 +15,7 @@
 </form>
 
 <?php
-	if (! load::is_ajax_request()) {
-		load::view('footer', $data);
+	if (! $this->opus->load->is_ajax_request()) {
+		$this->opus->load->view('footer', $data);
 	}
 ?>

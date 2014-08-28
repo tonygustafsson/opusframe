@@ -41,7 +41,7 @@
 			else
 			{
 				//Page does not exist
-				load::view('404');
+				$this->opus->load->view('404');
 			}
 			
 			//Save outputted views to $contents

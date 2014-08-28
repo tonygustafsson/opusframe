@@ -1,6 +1,6 @@
 	</article>
 
-	<?php load::js('main.js'); ?>
+	<?php $this->opus->load->js('main.js'); ?>
 
 	<footer>
 		<p>This is an example site.</p>
