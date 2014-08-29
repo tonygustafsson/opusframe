@@ -7,17 +7,17 @@
 			$this->opus =& opus::$instance;
 			$this->url_accessible = array('authorize', 'save_token', 'save_images');
 
-			$this->token_path = $this->opus->config->base_path_absolute . "cache/instagram/access_token";
-			$this->image_path = $this->opus->config->base_path_absolute . "assets/images/instagram/";
+			$this->token_path = $this->opus->config->base_path_absolute . "/cache/instagram/access_token";
+			$this->image_path = $this->opus->config->base_path_absolute . "/assets/images/instagram/";
 
 			$this->user_id = '1336819';
 			$this->client_id = '3df4102f06814637b7f660639b409fa0';
 			$this->client_secret = '0a6febb1ba7d4d18a34719210971184a';
-			$this->redirect_uri = 'http://www.tonyg.se/instagram/save_token/';
+			$this->redirect_uri = 'http://www.tonyg.se/projects/opusframe/instagram/save_token/';
 			$this->response_type = 'code';
 
 			$this->auth_url = 'https://api.instagram.com/oauth/authorize/?client_id=' . $this->client_id . '&redirect_uri=' . urlencode($this->redirect_uri) . '&response_type=' . $this->response_type;
-			$this->token_url = 'https://api.instagram.com/oath/access_token/';
+			$this->token_url = 'https://api.instagram.com/oauth/access_token/';
 			$this->media_url = 'https://api.instagram.com/v1/users/' . $this->user_id . '/media/recent';
 		}
 
@@ -33,7 +33,13 @@
 
 			$data = curl_exec($ch);
 
+			echo '<pre>'; print_r( curl_getinfo($ch) ); 
+			echo htmlspecialchars($data);
+			exit;
+
 			curl_close($ch);
+
+			echo $data;
 		}
 
 		public function save_token()
@@ -44,7 +50,7 @@
 			$query = array( 'client_id' => $this->client_id,
 							'client_secret' => $this->client_secret,
 							'grant_type' => 'authorization_code',
-							'redirect_uri' => $this->redirect_uri,
+							'redirect_uri' => urlencode($this->redirect_uri),
 							'code' => $code
 						);
 
@@ -62,11 +68,15 @@
 			curl_close($ch);
 
 			$json = json_decode($data);
-			$access_token = $json['access_token'];
 
-			$file = fopen($this->token_path, "w");
-			fwrite($file, $access_token);
-			fclose($file);
+			$access_token = $json->access_token;
+
+			if (! empty($access_token))
+			{
+				$file = fopen($this->token_path, "w");
+				fwrite($file, $access_token);
+				fclose($file);
+			}
 		}
 
 		public function get_token()
