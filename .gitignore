@@ -1,2 +1,4 @@
 *.log
 cache/*
+assets/images/instagram/*
+areas/images/*
