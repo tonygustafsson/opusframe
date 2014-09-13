@@ -5,7 +5,7 @@
 		public function __construct()
 		{	
 			$this->opus =& opus::$instance;
-			$this->url_accessible = array('authorize', 'save_token', 'save_images', 'get_images');
+			$this->url_accessible = array('save_images', 'get_images');
 
 			$this->image_path = $this->opus->config->base_path_absolute . "/assets/images/instagram/";
 			$this->user_id = '1336819';
