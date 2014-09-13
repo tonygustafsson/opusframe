@@ -135,8 +135,7 @@
 				}			
 			}
 
-			echo '<pre>';
-			print_r($metadata);
+			return $metadata;
 
 		}
 
