@@ -112,9 +112,11 @@
 				echo 'Could not find model ' . $model_path;
 		}
 
-		public function css($css_file)
+		public function css($css_file, $media = FALSE)
 		{
-			echo '<link rel="stylesheet" type="text/css" media="screen" href="' . $this->opus->config->style_path . '/' . $css_file . '">';
+			$media = (isset($media)) ? $media : "screen";
+
+			echo '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->config->style_path . '/' . $css_file . '">';
 		}
 
 		public function js($js_file)
