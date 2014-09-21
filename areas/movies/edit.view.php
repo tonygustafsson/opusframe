@@ -1,5 +1,6 @@
 <?php
 	if (! $this->opus->load->is_ajax_request()) {
+		$data['page_title'] = 'Edit movie';
 		$this->opus->load->view('header', $data);
 	}
 ?>

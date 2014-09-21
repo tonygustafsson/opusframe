@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title><?= $this->opus->config->site_name ?></title>
+	<title><?=(isset($page_title)) ? $page_title . " | " : ""; ?><?= $this->opus->config->site_name ?></title>
 	<?php $this->opus->load->css('base.css') ?>
 	<?php $this->opus->load->css('custom.css') ?>
 	<meta charset="utf-8">
