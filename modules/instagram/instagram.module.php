@@ -9,9 +9,11 @@
 
 			$this->image_path = $this->opus->config->base_path_absolute . "/assets/images/instagram/";
 			$this->user_id = '1336819';
-			$this->number_of_images = 20; //Max 33
+			$this->no_instagram_images = 20; //From Instagram API, Max 33
 			$this->client_id = '3df4102f06814637b7f660639b409fa0';
-			$this->media_url = 'https://api.instagram.com/v1/users/' . $this->user_id . '/media/recent?client_id=' . $this->client_id . '&count=' . $this->number_of_images;
+			$this->media_url = 'https://api.instagram.com/v1/users/' . $this->user_id . '/media/recent?client_id=' . $this->client_id . '&count=' . $this->no_instagram_images;
+		
+			$this->no_images = 10; //Images to get from cache
 		}
 
 		public function save_images()
@@ -49,7 +51,7 @@
 				$thumbnail_url = $image->images->thumbnail->url;
 				$large_image_url = $image->images->standard_resolution->url;
 				$created_time = $image->created_time;
-				$caption = $image->caption->text;
+				$caption = (isset($image->caption->text)) ? $image->caption->text : "";
 				$metadata = $created_time . '###' . $caption;
 
 				$metadata_path = $this->image_path . $image_id . '.txt';
@@ -94,22 +96,15 @@
 			}
 		}
 
-		public function get_images()
+		public function get_images($count = FALSE, $offset = FALSE)
 		{
 			$metadata = array();
-			$count = 20;
-			$offset = 0;
-
-			//How many images should be delivered?
-			if (isset($_GET['count']) && is_numeric($_GET['count']) && $_GET['count'] > 0 && $_GET['count'] < 51)
-				$count = $_GET['count'];
-
-			//From which file do we want to start to count?
-			if (isset($_GET['offset']) && is_numeric($_GET['offset']) && $_GET['offset'] > 0)
-				$offset = $_GET['offset'];
+			$count = ($count !== FALSE) ? $count : $this->no_images;
+			$offset = ($offset !== FALSE) ? $offset : 0;
 
 			//Get already saved images from disk
 			$metadata_files = glob($this->image_path . "/*.txt");
+			krsort($metadata_files);
 			$metadata_files = array_slice($metadata_files, $offset, $count);
 
 			foreach ($metadata_files as $metadata_file) {
@@ -136,7 +131,6 @@
 			}
 
 			return $metadata;
-
 		}
 
 	}
