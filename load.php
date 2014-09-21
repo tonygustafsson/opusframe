@@ -116,7 +116,7 @@
 		{
 			$media = (isset($media)) ? $media : "screen";
 
-			echo '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->config->style_path . '/' . $css_file . '">';
+			echo '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->config->style_path . $css_file . '">';
 		}
 
 		public function js($js_file)
