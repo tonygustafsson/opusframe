@@ -62,7 +62,7 @@
 </p>
 
 <p>
-	<a href="javascript:ajax('movies/create')">Create new movie with AJAX</a>
+	<a href="javascript:ajaxPage('movies/create')">Create new movie with AJAX</a>
 </p>
 
 <?php
