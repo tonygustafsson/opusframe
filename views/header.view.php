@@ -3,6 +3,7 @@
 	<title><?= $this->opus->config->site_name ?></title>
 	<?php $this->opus->load->css('base.css') ?>
 	<?php $this->opus->load->css('custom.css') ?>
+	<meta charset="utf-8">
 </head>
 
 <body>
