@@ -1,4 +1,6 @@
-function ajaxGet(url, element, method, pushState) {
+var	mobile = window.matchMedia("(max-width: 1090px)").matches;
+
+function ajaxGet(url, element, method, pushState, whenDone) {
 	"use strict";
 
 	var httpRequest = new XMLHttpRequest();
@@ -17,6 +19,10 @@ function ajaxGet(url, element, method, pushState) {
 					break;
 				default:
 					element.innerHTML = content;
+			}
+
+			if (whenDone) {
+				whenDone();
 			}
 		}
 	};
@@ -137,32 +143,159 @@ function handleImageFileSelect(e) {
 	reader.readAsDataURL(file);
 }
 
-function continuous_scroll(contentRoot, count, offset) {
+function createModalImage(currentImage) {
 	"use strict";
 
-	var dataCount = 'data-count',
-		dataOffset = 'data-offset';
+	function getImagePosition(lookFor) {
+		var	modalImages = document.querySelectorAll('.modal-trigger'),
+		i;
 
-	if (!contentRoot.hasAttribute(dataCount))
-	{
-		contentRoot.setAttribute(dataCount, count);
+		for (i = 0; i < modalImages.length; i = i + 1) {
+			if (modalImages[i] === lookFor) {
+				return i;
+			}
+		}
 	}
 
-	if (!contentRoot.hasAttribute(dataOffset))
-	{
-		contentRoot.setAttribute(dataOffset, offset);
+	currentImage.id = "thumb_" + getImagePosition(currentImage);
+
+	currentImage.addEventListener('click', function(e) {
+		e.preventDefault();
+
+		var modal = document.createElement('div'),
+			body = document.getElementsByTagName('body')[0],
+			closeButton = document.createElement('div'),
+			modalImage = document.createElement('img'),
+			imageTitle = document.createElement('p');
+
+		modalImage.src = this.getAttribute('href');
+		modal.className = 'modal';
+		modal.id = 'modal';
+		modal.setAttribute('data-current-image', getImagePosition(currentImage));
+		closeButton.className = 'close';
+		imageTitle.innerHTML = this.getElementsByTagName('p')[0].innerHTML;
+		imageTitle.className = 'image-title';
+
+		modal.appendChild(closeButton);
+		body.appendChild(modal);
+
+		modalImage.addEventListener('load', function() {
+			modal.appendChild(imageTitle);
+			modal.appendChild(modalImage);
+
+			var modalImagePos = this.getBoundingClientRect();
+			imageTitle.style.left = modalImagePos.left + 'px';
+			imageTitle.style.top = modalImagePos.top + 'px';
+			imageTitle.style.width = modalImagePos.width + 'px';
+		});
+
+		modal.addEventListener('click', function() {
+			body.removeChild(modal);
+			modal = null;
+		});
+	});
+}
+
+function createModalImages() {
+	"use strict";
+
+	if (!mobile) {
+		var i,
+			modalImages = document.querySelectorAll('.modal-trigger'),
+			currentImage;
+
+		for (i = 0; i < modalImages.length; i = i + 1) {
+			var currentImage = modalImages[i];
+			createModalImage(currentImage);
+		}
 	}
+}
+
+function continuous_scroll(contentRoot) {
+	"use strict";
+
+	var dataOffset = 'data-offset',
+		baseUrl = contentRoot.getAttribute('data-ajax-url'),
+		count = contentRoot.getAttribute('data-count');
+
+	//Set an offset for next request
+	contentRoot.setAttribute(dataOffset, count);
 
 	window.addEventListener('scroll', function() {
+		//Detect if we should stop trying to fetch more images
 		var	endOfContent = document.getElementById('end-of-content');
 
     	if (!endOfContent && (window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-			var url = '/opusframe/images?count=' + contentRoot.getAttribute(dataCount) + '&offset=' + contentRoot.getAttribute(dataOffset);
-			ajaxGet(url, contentRoot, "append");
+    		//If bottom is reached and there is more content
+			var url = baseUrl + '?count=' + count + '&offset=' + contentRoot.getAttribute(dataOffset);
+
+			//Get images through AJAX, make them modal images
+			ajaxGet(url, contentRoot, "append", false, createModalImages);
+
+			//Change the offset so we won't load the same images again
 			contentRoot.setAttribute(dataOffset, parseInt(contentRoot.getAttribute(dataOffset), 10) + parseInt(count, 10));
 		}
 	});
 }
+
+(function ModalImagesControl() {
+	"use strict";
+
+	document.addEventListener("keydown", function(e) {
+		var modal = document.getElementById('modal'),
+			modalImages = document.querySelectorAll('.modal-trigger');
+
+		if (modal === null) {
+			return;
+		}
+
+		switch(e.keyCode) {
+			case 27: //ESC
+				modal.click();
+				break;
+			case 37: //LEFT
+				var lastId = modalImages[0].parentNode.lastElementChild.id,
+					prevImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) - 1),
+					prevImage;
+
+				if (document.getElementById(prevImageId)) {
+					prevImage = document.getElementById(prevImageId).getElementsByTagName('img')[0];
+				}
+				else {
+					prevImage = document.getElementById(lastId).getElementsByTagName('img')[0];
+				}
+
+				modal.click(); //Remove old modal
+				prevImage.click(); //Create new one
+
+				break;
+			case 39: //RIGHT
+				var firstId = "thumb_0",
+					nextImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) + 1),
+					nextImage;
+
+				if (document.getElementById(nextImageId)) {
+					nextImage = document.getElementById(nextImageId).getElementsByTagName('img')[0];
+				}
+				else {
+					nextImage = document.getElementById(firstId).getElementsByTagName('img')[0];
+				}
+
+				modal.click(); //Remove old modal
+				nextImage.click(); //Create new one
+
+				break;
+		}
+	});
+})();
+
+(function detectWindowResize() {
+	"use strict";
+
+	window.addEventListener('resize', function () {
+		mobile = window.matchMedia("(max-width: 1090px)").matches;
+	});
+})();
 
 (function listenForPopState() {
 	"use strict";
@@ -255,6 +388,16 @@ function continuous_scroll(contentRoot, count, offset) {
 
 	if (contentRoot)
 	{
-		continuous_scroll(contentRoot, 5, 5);
+		continuous_scroll(contentRoot);
+	}
+})();
+
+(function enableModalImages() {
+	"use strict";
+	
+	var modalImages = document.querySelectorAll('.modal-trigger');
+
+	if (modalImages.length > 0) {
+		createModalImages();
 	}
 })();
