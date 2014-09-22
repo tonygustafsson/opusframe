@@ -216,24 +216,34 @@ function continuous_scroll(contentRoot) {
 
 	var dataOffset = 'data-offset',
 		baseUrl = contentRoot.getAttribute('data-ajax-url'),
-		count = contentRoot.getAttribute('data-count');
+		count = contentRoot.getAttribute('data-count'),
+		needsScrolling = document.getElementsByTagName('body')[0].innerHeight > window.innerHeight;
 
 	//Set an offset for next request
 	contentRoot.setAttribute(dataOffset, count);
 
+	function getMoreContent() {
+		var url = baseUrl + '?count=' + count + '&offset=' + contentRoot.getAttribute(dataOffset);
+
+		//Get images through AJAX, make them modal images
+		ajaxGet(url, contentRoot, "append", false, createModalImages);
+
+		//Change the offset so we won't load the same images again
+		contentRoot.setAttribute(dataOffset, parseInt(contentRoot.getAttribute(dataOffset), 10) + parseInt(count, 10));
+	}
+
+	if (!needsScrolling) {
+		getMoreContent();
+	}
+
 	window.addEventListener('scroll', function() {
 		//Detect if we should stop trying to fetch more images
-		var	endOfContent = document.getElementById('end-of-content');
+		var	endOfContent = document.getElementById('end-of-content'),
+			bottomIsReached = (window.innerHeight + window.scrollY) >= document.body.offsetHeight;
 
-    	if (!endOfContent && (window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+    	if (!endOfContent && bottomIsReached) {
     		//If bottom is reached and there is more content
-			var url = baseUrl + '?count=' + count + '&offset=' + contentRoot.getAttribute(dataOffset);
-
-			//Get images through AJAX, make them modal images
-			ajaxGet(url, contentRoot, "append", false, createModalImages);
-
-			//Change the offset so we won't load the same images again
-			contentRoot.setAttribute(dataOffset, parseInt(contentRoot.getAttribute(dataOffset), 10) + parseInt(count, 10));
+			getMoreContent();
 		}
 	});
 }
@@ -394,7 +404,7 @@ function continuous_scroll(contentRoot) {
 
 (function enableModalImages() {
 	"use strict";
-	
+
 	var modalImages = document.querySelectorAll('.modal-trigger');
 
 	if (modalImages.length > 0) {
