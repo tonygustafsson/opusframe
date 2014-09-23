@@ -15,6 +15,7 @@
 					'database',
 					'auth',
 					'url',
+					'xml',
 					'instagram'
 				);
 
@@ -24,7 +25,9 @@
 			
 			$this->routes = array(
 				'default' => 'movies',
-				'404' =>	'404'
+				'404' =>	'404',
+				'sitemap.xml' => 'xml/sitemap',
+				'sitemap.xml.gz' => 'xml/sitemap_gzip'
 			);
 
 			$this->database = array(
