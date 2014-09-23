@@ -1,74 +1,83 @@
 var	mobile = window.matchMedia("(max-width: 1090px)").matches;
 
-function ajaxGet(url, element, method, pushState, whenDone) {
-	"use strict";
+var Ajax = {
+	url: '/',
+	responseElement: document.getElementsByTagName('article')[0],
+	handleContent: 'replace',
+	pushState: false,
+	whenDone: false,
 
-	var httpRequest = new XMLHttpRequest();
+	get: function() {
+		"use strict";
 
-	httpRequest.onreadystatechange = function() {
-		if (httpRequest.readyState === 4 && httpRequest.status === 200) {
-			//Only fire when response is ready and HTTP status is OK
-			var content = httpRequest.responseText;
+		var httpRequest = new XMLHttpRequest();
 
-			switch(method) {
-				case "prepend":
-					element.innerHTML = content + element.innerHTML;
-					break;
-				case "append":
-					element.innerHTML = element.innerHTML + content;
-					break;
-				default:
-					element.innerHTML = content;
+		httpRequest.onreadystatechange = function() {
+			if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+				//Only fire when response is ready and HTTP status is OK
+				var content = httpRequest.responseText;
+
+				switch(Ajax.handleContent) {
+					case "prepend":
+						Ajax.responseElement.innerHTML = content + Ajax.responseElement.innerHTML;
+						break;
+					case "append":
+						Ajax.responseElement.innerHTML = Ajax.responseElement.innerHTML + content;
+						break;
+					default:
+						Ajax.responseElement.innerHTML = content;
+				}
+
+				if (this.whenDone) {
+					this.whenDone();
+				}
 			}
+		};
 
-			if (whenDone) {
-				whenDone();
-			}
+		httpRequest.open('GET', this.url);
+		httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+		if (this.pushState) {
+			httpRequest.addEventListener("load", function() {
+				if (this.url !== window.location) {
+					window.history.pushState({path: this.url}, '', this.url);
+				}
+			}, false);
 		}
-	};
 
-	httpRequest.open('GET', url);
-	httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+		httpRequest.send();
+	},
+	uploadFile: function(file, originalFileName, itemID, imageID) {
+		"use strict";
 
-	if (pushState) {
-		httpRequest.addEventListener("load", function() {
-			if (url !== window.location) {
-				window.history.pushState({path: url}, '', url);
-			}
-		}, false);
+		var httpRequest = new XMLHttpRequest();
+
+		httpRequest.onreadystatechange = function() {
+			var imageSrc = httpRequest.responseText,
+				thumbnail = document.getElementById('thumb_' + imageID);
+			
+			thumbnail.src = imageSrc;
+		};
+
+		if (httpRequest.upload)
+		{
+			httpRequest.open("POST", '/opusframe/movies/image_upload', true);
+			httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+			httpRequest.setRequestHeader('X-Original-File-Name', originalFileName);
+			httpRequest.setRequestHeader('X-Item-Id', itemID);
+			httpRequest.setRequestHeader('X-Image-Id', imageID);
+			httpRequest.send(file);
+		}
 	}
-
-	httpRequest.send();
-}
+};
 
 function ajaxPage(url) {
 	"use strict";
 
-	var article = document.getElementById('main');
-	ajaxGet(url, article, "replace", true);
-}
-
-function ajaxUploadFile(file, originalFileName, itemID, imageID)
-{
-	"use strict";
-	var httpRequest = new XMLHttpRequest();
-
-	httpRequest.onreadystatechange = function() {
-		var imageSrc = httpRequest.responseText,
-			thumbnail = document.getElementById('thumb_' + imageID);
-		
-		thumbnail.src = imageSrc;
-	};
-
-	if (httpRequest.upload)
-	{
-		httpRequest.open("POST", '/opusframe/movies/image_upload', true);
-		httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-		httpRequest.setRequestHeader('X-Original-File-Name', originalFileName);
-		httpRequest.setRequestHeader('X-Item-Id', itemID);
-		httpRequest.setRequestHeader('X-Image-Id', imageID);
-		httpRequest.send(file);
-	}
+	Ajax.url = url;
+	Ajax.responseElement = document.getElementById('main');
+	Ajax.pushState = true;
+	Ajax.get();
 }
 
 function isInArray(string, array) {
@@ -127,7 +136,7 @@ function handleImageFileSelect(e) {
 	reader.onload = (function(theFile) {
 		return function() {
 			thumbnail.src = imageLoadingURL;
-			ajaxUploadFile(theFile, fileName, itemID, imageID);
+			Ajax.uploadFile(theFile, fileName, itemID, imageID);
 
 			var nextImageID = parseInt(imageID, 10) + 1,
 				nextUploader = document.getElementById('images_upload_section_' + nextImageID);
@@ -226,7 +235,11 @@ function continuous_scroll(contentRoot) {
 		var url = baseUrl + '?count=' + count + '&offset=' + contentRoot.getAttribute(dataOffset);
 
 		//Get images through AJAX, make them modal images
-		ajaxGet(url, contentRoot, "append", false, createModalImages);
+		Ajax.url = url;
+		Ajax.responseElement = contentRoot;
+		Ajax.handleContent = "append";
+		Ajax.whenDone = createModalImages;
+		Ajax.get();
 
 		//Change the offset so we won't load the same images again
 		contentRoot.setAttribute(dataOffset, parseInt(contentRoot.getAttribute(dataOffset), 10) + parseInt(count, 10));
