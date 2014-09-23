@@ -28,19 +28,19 @@ var Ajax = {
 						Ajax.responseElement.innerHTML = content;
 				}
 
-				if (this.whenDone) {
-					this.whenDone();
+				if (Ajax.whenDone != false && typeof Ajax.whenDone === 'function') {
+					Ajax.whenDone();
 				}
 			}
 		};
 
-		httpRequest.open('GET', this.url);
+		httpRequest.open('GET', Ajax.url);
 		httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-		if (this.pushState) {
+		if (this.pushState === true) {
 			httpRequest.addEventListener("load", function() {
-				if (this.url !== window.location) {
-					window.history.pushState({path: this.url}, '', this.url);
+				if (Ajax.url !== window.location) {
+					window.history.pushState({id: Ajax.url}, '', Ajax.url);
 				}
 			}, false);
 		}
