@@ -72,9 +72,9 @@
 			$backtrace = debug_backtrace()[0];
 
 			if (isset($backtrace['file']) && strpos($backtrace['file'], '.controller.php') !== FALSE)
-				$view_path = dirname($backtrace['file']) . '\\' . $view . '.view.php';
+				$view_path = dirname($backtrace['file']) . '/' . $view . '.view.php';
 			else if (isset($backtrace['file']) && strpos($backtrace['file'], '.module.php') !== FALSE)
-				$view_path = dirname($backtrace['file']) . '\\' . $view . '.view.php';
+				$view_path = dirname($backtrace['file']) . '/' . $view . '.view.php';
 			else
 				$view_path = $this->opus->config->base_path_absolute . '/views/' . $view . '.view.php';
 
@@ -112,16 +112,14 @@
 				echo 'Could not find model ' . $model_path;
 		}
 
-		public function css($css_file, $media = FALSE)
+		public function css($css_file, $media = "all")
 		{
-			$media = (isset($media)) ? $media : "screen";
-
 			echo '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->config->style_path . $css_file . '">';
 		}
 
 		public function js($js_file)
 		{
-			echo '<script src="' . $this->opus->config->js_path . '/' . $js_file . '"></script>';
+			echo '<script type="text/javascript" src="' . $this->opus->config->js_path . $js_file . '"></script>';
 		}
 
 		public function url($url)
