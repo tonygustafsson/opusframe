@@ -328,15 +328,6 @@ function continuous_scroll(contentRoot) {
 	});
 })();
 
-(function focusOnFirstInput() {
-	"use strict";
-
-	if (document.forms[0])
-	{
-		document.forms[0].elements[0].focus();
-	}
-})();
-
 (function createRanges() {
 	//Use HTML5 ranges
 	"use strict";

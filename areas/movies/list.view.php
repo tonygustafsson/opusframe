@@ -5,7 +5,7 @@
 ?>
 
 <form id="form-search" method="post" action="<?=$this->opus->config->base_url('movies/search')?>">
-	<input type="search" name="search" id="search" value="<?= ((! empty($this->opus->url->get_parameter('search')) ? $this->opus->url->get_parameter('search') : '')) ?>" placeholder="Search for movie">
+	<input type="search" name="search" id="search" autofocus value="<?= ((! empty($this->opus->url->get_parameter('search')) ? $this->opus->url->get_parameter('search') : '')) ?>" placeholder="Search for movie">
 	<input type="submit" value="Search">
 </form>
 
