@@ -1,5 +1,8 @@
 <?php
 	if (! $this->opus->load->is_ajax_request()) {
+		$data['page_title'] = 'List';
+		$data['page_description'] = "A demo page for OpusFrame";
+		$data['page_keywords'] = "opusframe, demo, movie database";
 		$this->opus->load->view('header', $data);
 	}
 ?>

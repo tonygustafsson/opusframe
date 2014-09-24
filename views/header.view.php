@@ -1,6 +1,8 @@
 <html>
 <head>
 	<title><?=(isset($page_title)) ? $page_title . " | " : ""; ?><?= $this->opus->config->site_name ?></title>
+	<?php if (isset($page_description)) { echo '<meta name="description" content="' . $page_description . '">'; } ?>
+	<?php if (isset($page_keywords)) { echo '<meta name="keywords" content="' . $page_keywords . '">'; } ?>
 	<?php $this->opus->load->css('base.css') ?>
 	<?php $this->opus->load->css('custom.css') ?>
 	<meta charset="utf-8">
