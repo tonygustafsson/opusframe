@@ -62,8 +62,13 @@
 
 			if ($this->smtp_auth === TRUE)
 			{
-				$this->send_command("STARTTLS", $this->smtp_codes['command_successfull']);
-				$this->send_command("AUTH LOGIN", $this->smtp_codes['service_ready']);
+				//Cannot make TLS work :(
+				//$this->send_command("STARTTLS", $this->smtp_codes['command_successfull']);
+				$this->send_command("AUTH LOGIN", $this->smtp_codes['command_successfull']);
+
+				//Enable TLS encryption
+				//stream_socket_enable_crypto($this->mail, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+
 				$this->send_command(base64_encode($this->smtp_user), $this->smtp_codes['user_ok']);
 				$this->send_command(base64_encode($this->smtp_pass), $this->smtp_codes['user_ok']);
 			}
@@ -116,13 +121,14 @@
 			//Send a command to the SMTP server, and first wait for a certain error code
 			$success = FALSE;
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Send: ' . $command); }
-
 			if (! $this->enable_emailing || $wanted_response_code === FALSE)
 			{
 				//No need to wait for the right answer before sending.
 				if ($this->enable_emailing)
+				{
+					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Send (directly): ' . $command); }
 					fwrite($this->mail, $command . "\r\n");
+				}
 
 				$success = TRUE;
 			}
@@ -134,7 +140,7 @@
 					$smtp_response = $this->read_response();
 					$smtp_code = substr($smtp_response, 0, 3); //Get three first chars, like "250"
 
-					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Respond: ' . $smtp_response); }
+					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Respond: (' . $x . ' time. ' . $this->command_retry_timeout . ' microseconds) ' . $smtp_response); }
 
 					if (substr($smtp_code, 0, 1) == "5")
 						exit('Recieved SMTP error: ' . $smtp_response);
@@ -142,7 +148,10 @@
 					if ($smtp_code == $wanted_response_code)
 					{
 						if ($this->enable_emailing)
+						{
+							if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Send (OK Response: ' . $wanted_response_code . '): ' . $command); }
 							fwrite($this->mail, $command . "\r\n");
+						}
 
 						$success = TRUE;
 						break;
