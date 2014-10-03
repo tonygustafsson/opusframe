@@ -13,6 +13,10 @@
 			$this->client_id = '3df4102f06814637b7f660639b409fa0';
 			$this->media_url = 'https://api.instagram.com/v1/users/' . $this->user_id . '/media/recent?client_id=' . $this->client_id . '&count=' . $this->no_instagram_images;
 		
+			$this->save_small_images = TRUE;
+			$this->save_medium_images = TRUE;
+			$this->save_large_images = TRUE;
+
 			$this->no_images = 10; //Images to get from cache
 		}
 
@@ -25,8 +29,6 @@
 
 			if (isset($_GET['max_id']))
 				$media_url .= '&max_id=' . $_GET['max_id'];
-
-			echo $media_url;
 
 			//Get the JSON from the API and save images that is not already saved
 			$ch = curl_init($media_url);
@@ -44,24 +46,36 @@
 
 			foreach ($json->data as $image)
 			{
+				//Ignore videos
 				if ($image->type != "image")
 					continue;
 
 				$image_id = $image->id;
-				$thumbnail_url = $image->images->thumbnail->url;
-				$large_image_url = $image->images->standard_resolution->url;
+				$image_small_url = $image->images->thumbnail->url;
+				$image_medium_url = $image->images->low_resolution->url;
+				$image_large_url = $image->images->standard_resolution->url;
 				$created_time = $image->created_time;
 				$caption = (isset($image->caption->text)) ? $image->caption->text : "";
 				$metadata = $created_time . '###' . $caption;
 
 				$metadata_path = $this->image_path . $image_id . '.txt';
-				$thumbnail_path = $this->image_path . $image_id . '-thumb.jpg';
-				$large_image_path = $this->image_path . $image_id . '.jpg';
+				$image_small_path = $this->image_path . $image_id . '-small.jpg';
+				$image_medium_path = $this->image_path . $image_id . '-medium.jpg';
+				$image_large_path = $this->image_path . $image_id . '-large.jpg';
 				
-				$this->save_image($thumbnail_url, $thumbnail_path);
-				$this->save_image($large_image_url, $large_image_path);
+				if ($this->save_small_images)
+						$this->save_image($image_small_url, $image_small_path);
+
+				if ($this->save_medium_images)
+						$this->save_image($image_medium_url, $image_medium_path);
+				
+				if ($this->save_large_images)
+						$this->save_image($image_large_url, $image_large_path);
+
 				$this->save_metadata($metadata_path, $metadata);
 			}
+
+			echo count($json->data) . ' new photos were downloaded.';
 		}
 
 		public function save_image($url, $path)
@@ -118,16 +132,20 @@
 				$current_data['created_time'] = $content[0];
 				$current_data['caption'] = $content[1];
 
-				$image_path = $this->image_path . $id . '.jpg';
-				$thumbnail_path = $this->image_path . $id . '-thumb.jpg';
+				$large_image_path = $this->image_path . $id . '-large.jpg';
+				$medium_image_path = $this->image_path . $id . '-medium.jpg';
+				$small_image_path = $this->image_path . $id . '-small.jpg';
 
-				if (file_exists($image_path) && file_exists($thumbnail_path))
-				{
-					$current_data['image_url'] = $this->opus->config->path_to_url($image_path);
-					$current_data['thumbnail_url'] = $this->opus->config->path_to_url($thumbnail_path);
+				if ($this->save_small_images && file_exists($small_image_path))
+					$current_data['small_image_url'] = $this->opus->config->path_to_url($small_image_path);
 
-					$metadata[] = $current_data;
-				}			
+				if ($this->save_medium_images && file_exists($medium_image_path))
+					$current_data['medium_image_url'] = $this->opus->config->path_to_url($medium_image_path);
+
+				if ($this->save_large_images && file_exists($large_image_path))
+					$current_data['large_image_url'] = $this->opus->config->path_to_url($large_image_path);
+
+				$metadata[] = $current_data;
 			}
 
 			return $metadata;
