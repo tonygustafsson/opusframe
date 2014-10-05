@@ -1,4 +1,4 @@
-var	mobile = window.matchMedia("(max-width: 1090px)").matches;
+var mobile = true;
 
 var Ajax = {
 	url: '/',
@@ -252,7 +252,7 @@ function continuous_scroll(contentRoot) {
 	window.addEventListener('scroll', function() {
 		//Detect if we should stop trying to fetch more images
 		var	endOfContent = document.getElementById('end-of-content'),
-			bottomIsReached = (window.innerHeight + window.scrollY) >= document.body.offsetHeight;
+			bottomIsReached = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight;
 
     	if (!endOfContent && bottomIsReached) {
     		//If bottom is reached and there is more content
@@ -315,8 +315,14 @@ function continuous_scroll(contentRoot) {
 (function detectWindowResize() {
 	"use strict";
 
-	window.addEventListener('resize', function () {
+	if (window.matchMedia) {
 		mobile = window.matchMedia("(max-width: 1090px)").matches;
+	}
+
+	window.addEventListener('resize', function () {
+		if (window.matchMedia) {
+			mobile = window.matchMedia("(max-width: 1090px)").matches;
+		}
 	});
 })();
 
