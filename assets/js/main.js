@@ -1,4 +1,5 @@
-var mobile = true;
+//Assume not mobile, because IE9 cannot detect matchMedia and some features would be turned off
+var mobile = false;
 
 var Ajax = {
 	url: '/',
