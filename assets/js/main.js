@@ -29,7 +29,7 @@ var Ajax = {
 						Ajax.responseElement.innerHTML = content;
 				}
 
-				if (Ajax.whenDone != false && typeof Ajax.whenDone === 'function') {
+				if (Ajax.whenDone !== false && typeof Ajax.whenDone === 'function') {
 					Ajax.whenDone();
 				}
 			}
@@ -153,6 +153,45 @@ function handleImageFileSelect(e) {
 	reader.readAsDataURL(file);
 }
 
+function loadModalPrevImage() {
+	"use strict";
+
+	var modal = document.getElementById('modal'),
+		modalImages = document.querySelectorAll('.modal-trigger'),
+		lastId = modalImages[modalImages.length - 1].parentNode.lastElementChild.id,
+		prevImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) - 1),
+		prevImage;
+
+	if (document.getElementById(prevImageId)) {
+		prevImage = document.getElementById(prevImageId).getElementsByTagName('img')[0];
+	}
+	else {
+		prevImage = document.getElementById(lastId).getElementsByTagName('img')[0];
+	}
+
+	modal.click(); //Remove old modal
+	prevImage.click(); //Create new one
+}
+
+function loadModalNextImage() {
+	"use strict";
+
+	var modal = document.getElementById('modal'),
+		firstId = "thumb_0",
+		nextImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) + 1),
+		nextImage;
+
+	if (document.getElementById(nextImageId)) {
+		nextImage = document.getElementById(nextImageId).getElementsByTagName('img')[0];
+	}
+	else {
+		nextImage = document.getElementById(firstId).getElementsByTagName('img')[0];
+	}
+
+	modal.click(); //Remove old modal
+	nextImage.click(); //Create new one
+}
+
 function createModalImage(currentImage) {
 	"use strict";
 
@@ -176,20 +215,55 @@ function createModalImage(currentImage) {
 			body = document.getElementsByTagName('body')[0],
 			closeButton = document.createElement('div'),
 			modalImage = document.createElement('img'),
-			imageTitle = document.createElement('p');
+			imageTitle = document.createElement('p'),
+			prevButton = document.createElement('div'),
+			nextButton = document.createElement('div');
 
 		modalImage.src = this.getAttribute('href');
 		modal.className = 'modal';
 		modal.id = 'modal';
 		modal.setAttribute('data-current-image', getImagePosition(currentImage));
-		closeButton.className = 'close';
+		closeButton.className = 'modal-button close-button';
+		closeButton.innerHTML = "x";
 		imageTitle.innerHTML = this.getElementsByTagName('p')[0].innerHTML;
+		prevButton.id = "modalPrevButton";
+		prevButton.className = 'modal-button prev-button';
+		prevButton.innerHTML = "&laquo;";
+		nextButton.id = "modalNextButton";
+		nextButton.className = 'modal-button next-button';
+		nextButton.innerHTML = "&raquo;";
 		imageTitle.className = 'image-title';
 
 		modal.appendChild(closeButton);
+		modal.appendChild(prevButton);
+		modal.appendChild(nextButton);
 		body.appendChild(modal);
 
-		modalImage.addEventListener('load', function() {
+		prevButton.addEventListener("click", function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			
+			loadModalPrevImage();
+		});
+
+		nextButton.addEventListener("click", function(e) {
+			e.stopPropagation(); /* Don't close modal */
+			
+			loadModalNextImage();
+		});
+
+		modalImage.addEventListener('click', function(e) {
+			e.stopPropagation(); /* Don't close modal */
+		});
+
+		imageTitle.addEventListener('click', function(e) {
+			e.stopPropagation(); /* Don't close modal */
+		});
+
+		modalImage.addEventListener('load', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+
 			modal.appendChild(imageTitle);
 			modal.appendChild(modalImage);
 
@@ -197,6 +271,13 @@ function createModalImage(currentImage) {
 			imageTitle.style.left = modalImagePos.left + 'px';
 			imageTitle.style.top = modalImagePos.top + 'px';
 			imageTitle.style.width = modalImagePos.width + 'px';
+
+			prevButton.style.left = (modalImagePos.left - 60) + 'px';
+			prevButton.style.display = "block";
+			nextButton.style.left = (modalImagePos.left + modalImagePos.width + 6) + 'px';
+			nextButton.style.display = "block";
+
+			modalImage.style.opacity = 1; /* Show fading image */
 		});
 
 		modal.addEventListener('click', function() {
@@ -215,7 +296,7 @@ function createModalImages() {
 			currentImage;
 
 		for (i = 0; i < modalImages.length; i = i + 1) {
-			var currentImage = modalImages[i];
+			currentImage = modalImages[i];
 			createModalImage(currentImage);
 		}
 	}
@@ -266,8 +347,7 @@ function continuous_scroll(contentRoot) {
 	"use strict";
 
 	document.addEventListener("keydown", function(e) {
-		var modal = document.getElementById('modal'),
-			modalImages = document.querySelectorAll('.modal-trigger');
+		var modal = document.getElementById('modal');
 
 		if (modal === null) {
 			return;
@@ -278,36 +358,10 @@ function continuous_scroll(contentRoot) {
 				modal.click();
 				break;
 			case 37: //LEFT
-				var lastId = modalImages[0].parentNode.lastElementChild.id,
-					prevImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) - 1),
-					prevImage;
-
-				if (document.getElementById(prevImageId)) {
-					prevImage = document.getElementById(prevImageId).getElementsByTagName('img')[0];
-				}
-				else {
-					prevImage = document.getElementById(lastId).getElementsByTagName('img')[0];
-				}
-
-				modal.click(); //Remove old modal
-				prevImage.click(); //Create new one
-
+				loadModalPrevImage();
 				break;
 			case 39: //RIGHT
-				var firstId = "thumb_0",
-					nextImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) + 1),
-					nextImage;
-
-				if (document.getElementById(nextImageId)) {
-					nextImage = document.getElementById(nextImageId).getElementsByTagName('img')[0];
-				}
-				else {
-					nextImage = document.getElementById(firstId).getElementsByTagName('img')[0];
-				}
-
-				modal.click(); //Remove old modal
-				nextImage.click(); //Create new one
-
+				loadModalNextImage();
 				break;
 		}
 	});
