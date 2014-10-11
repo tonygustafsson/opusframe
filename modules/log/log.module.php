@@ -52,7 +52,7 @@
 
 		private function remove_old_log_files()
 		{
-			$log_files = glob($this->log_path . '/*', GLOB_BRACE);
+			$log_files = glob($this->log_path . '/*', GLOB_NOSORT | GLOB_BRACE);
 			$delete_older_than = strtotime("-" . $this->log_history_keep . " days");
 
 			foreach($log_files as $log_file) {

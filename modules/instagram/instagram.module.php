@@ -117,7 +117,7 @@
 			$offset = ($offset !== FALSE) ? $offset : 0;
 
 			//Get already saved images from disk
-			$metadata_files = glob($this->image_path . "/*.txt");
+			$metadata_files = glob($this->image_path . "/*.txt", GLOB_NOSORT);
 			krsort($metadata_files);
 			$metadata_files = array_slice($metadata_files, $offset, $count);
 

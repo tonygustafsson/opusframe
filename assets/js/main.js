@@ -196,7 +196,7 @@ function createModalImage(currentImage) {
 	"use strict";
 
 	function getImagePosition(lookFor) {
-		var	modalImages = document.querySelectorAll('.modal-trigger'),
+		var modalImages = document.querySelectorAll('.modal-trigger'),
 		i;
 
 		for (i = 0; i < modalImages.length; i = i + 1) {

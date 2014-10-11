@@ -126,7 +126,6 @@
 				//No need to wait for the right answer before sending.
 				if ($this->enable_emailing)
 				{
-					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Send (directly): ' . $command); }
 					fwrite($this->mail, $command . "\r\n");
 				}
 
