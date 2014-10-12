@@ -17,7 +17,7 @@
 			$this->log_file_name = date("Ymd") . '.log';
 			$this->log_time_format = "H:i:s";
 			$this->log_file_method = "a"; //Open for writing only, pointer at the end of the file. Create if not exists.
-			$this->log_history_keep = 7; //Keep log files newer than # days
+			$this->log_history_keep = 90; //Keep log files newer than # days
 
 			if (! file_exists($this->log_path . $this->log_file_name))
 				$this->remove_old_log_files();
@@ -52,6 +52,8 @@
 
 		private function remove_old_log_files()
 		{
+			$this->write('info', 'Removing old log files, if any...');
+
 			$log_files = glob($this->log_path . '/*', GLOB_NOSORT | GLOB_BRACE);
 			$delete_older_than = strtotime("-" . $this->log_history_keep . " days");
 
