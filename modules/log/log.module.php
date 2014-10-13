@@ -25,6 +25,8 @@
 
 		public function write($level, $message)
 		{
+			$log_level = 4; //Debug default
+
 			switch (strtolower($level))
 			{
 				case "critical":
@@ -33,8 +35,6 @@
 					$log_level = 2;
 				case "info":
 					$log_level = 3;
-				default:
-					$log_level = 4;
 			}
 
 			if ($log_level <= $this->log_level)
