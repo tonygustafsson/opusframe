@@ -139,7 +139,7 @@
 					$smtp_response = $this->read_response();
 					$smtp_code = substr($smtp_response, 0, 3); //Get three first chars, like "250"
 
-					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Respond: (' . $x . ' time. ' . $this->command_retry_timeout . ' microseconds) ' . $smtp_response); }
+					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SMTP Respond: ' . trim($smtp_response)); }
 
 					if (substr($smtp_code, 0, 1) == "5")
 						exit('Recieved SMTP error: ' . $smtp_response);
@@ -148,7 +148,7 @@
 					{
 						if ($this->enable_emailing)
 						{
-							if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'SMTP Send (OK Response: ' . $wanted_response_code . '): ' . $command); }
+							if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SMTP Send (OK Response: ' . $wanted_response_code . '): ' . $command); }
 							fwrite($this->mail, $command . "\r\n");
 						}
 
