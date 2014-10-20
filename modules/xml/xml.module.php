@@ -20,7 +20,7 @@
             header('Content-type: text/xml');
             echo $this->create_sitemap($this->pages);
 
-            if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'Generated sitemap.xml by IP ' . $_SERVER['REMOTE_ADDR']); }
+            $this->opus->log->write('info', 'Generated sitemap.xml by IP ' . $_SERVER['REMOTE_ADDR']);
         }
 
         public function sitemap_gzip()
@@ -34,7 +34,7 @@
 
             echo $compressed_sitemap;
 
-            if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'Generated sitemap.xml.gz by IP ' . $_SERVER['REMOTE_ADDR']); }
+            $this->opus->log->write('info', 'Generated sitemap.xml.gz by IP ' . $_SERVER['REMOTE_ADDR']);
         }
 
         private function create_sitemap($data) 

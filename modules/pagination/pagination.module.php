@@ -6,8 +6,6 @@
 		{	
 			$this->opus =& opus::$instance;
 
-			$this->opus->load->require_modules(array('url'));
-
 			$this->items_per_page = 5;
 			$this->start_string = '&laquo;Start';
 			$this->prev_string = '&lt;Prev';

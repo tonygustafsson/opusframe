@@ -75,7 +75,7 @@
 				$this->save_metadata($metadata_path, $metadata);
 			}
 
-            if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'Downloading images from instagram with IP: ' . $_SERVER['REMOTE_ADDR']); }
+            $this->opus->log->write('info', 'Downloading images from instagram with IP: ' . $_SERVER['REMOTE_ADDR']);
 			echo count($json->data) . ' new photos were downloaded.';
 		}
 

@@ -33,7 +33,7 @@
 				&& (time() - $_SESSION[$this->created_identifier]) > $this->session_timeout
 			)
 			{
-				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', session_id() . ' logged out due to session timeout (' . (time() - $_SESSION[$this->created_identifier]) . '/' . $this->session_timeout . ' seconds)'); }
+				$this->opus->log->write('info', session_id() . ' logged out due to session timeout (' . (time() - $_SESSION[$this->created_identifier]) . '/' . $this->session_timeout . ' seconds)');
 
 				session_unset();
 				session_destroy();
@@ -77,7 +77,7 @@
 		{
 			$session_name = $this->flash_pre_name . $this->flash_next_name . $name;
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'Flash set: ' . $session_name); }
+			$this->opus->log->write('debug', 'Flash set: ' . $session_name);
 
 			$_SESSION[$session_name] = $data;
 		}
@@ -88,7 +88,7 @@
 
 			if (isset($_SESSION[$session_name]) && ! empty($_SESSION[$session_name]))
 			{
-				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'Flash get: ' . $name); }
+				$this->opus->log->write('debug', 'Flash get: ' . $name);
 
 				return $_SESSION[$session_name];
 			}

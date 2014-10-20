@@ -47,7 +47,7 @@
 
 		public function save_cache_file()
 		{
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', 'Saved cache: ' . $this->cache_file); }
+			$this->opus->log->write('info', 'Saved cache: ' . $this->cache_file);
 
 			$contents = ob_get_contents();
 

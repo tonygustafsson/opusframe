@@ -5,8 +5,6 @@
 		{
 			$this->opus =& opus::$instance;
 
-			$this->opus->load->require_modules(array('form'));
-
 			$this->xss_encoding = "ISO8859-1";
 
 			$this->db = new mysqli( $this->opus->config->database['host'],
@@ -59,7 +57,7 @@
 			if ($limit !== FALSE)
 				$sql .= ' LIMIT ' . $limit;
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
+			$this->opus->log->write('debug', 'SQL Query: ' . $sql);
 			$result = $this->db->query($sql);
 
 			if (! $result)
@@ -113,7 +111,7 @@
 			$sql .= is_numeric(current($get_settings['where'])) ? current($get_settings['where']) : '"' . current($get_settings['where']) . '"';
 			$sql .= " LIMIT 1";
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
+			$this->opus->log->write('debug', 'SQL Query: ' . $sql);
 			$result = $this->db->query($sql);
 
 			if (! $result)
@@ -124,11 +122,7 @@
 
 		public function insert($insert_settings)
 		{
-			if ($this->opus->load->is_module_loaded('form'))
-			{
-				//Validate the input and add errors to list
-				$this->db->form_errors = $this->opus->form->validate($insert_settings['data_model']);
-			}
+			$this->db->form_errors = $this->opus->form->validate($insert_settings['data_model']);
 
 			if (! isset($this->db->form_errors))
 			{
@@ -162,7 +156,7 @@
 				if (isset($insert_settings['data_model']['db_table']) && ! empty($keys) && ! empty($values))
 				{
 					$sql = 'INSERT INTO ' . $insert_settings['data_model']['db_table'] . ' (' . $keys . ') VALUES (' . $changes . ');';
-					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
+					$this->opus->log->write('debug', 'SQL Query: ' . $sql);
 
 					$this->make_statement($sql, $values, $value_types);
 				}
@@ -173,11 +167,8 @@
 
 		public function update($update_settings)
 		{
-			if ($this->opus->load->is_module_loaded('form'))
-			{
-				//Validate the input and add errors to list
-				$this->db->form_errors = $this->opus->form->validate($update_settings['data_model']);
-			}
+			//Validate the input and add errors to list
+			$this->db->form_errors = $this->opus->form->validate($update_settings['data_model']);
 
 			if (! isset($this->db->form_errors))
 			{
@@ -207,7 +198,7 @@
 					$sql .= ' WHERE ' . key($update_settings['where']) . ' = ?';
 					$value_types .= is_numeric(current($update_settings['where'])) ? "i" : "s";
 
-					if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
+					$this->opus->log->write('debug', 'SQL Query: ' . $sql);
 
 					$values[] = array_values($update_settings['where'])[0];
 
@@ -226,7 +217,7 @@
 
 			$this->make_statement($sql, $values, $value_types);
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('debug', 'SQL Query: ' . $sql); }
+			$this->opus->log->write('debug', 'SQL Query: ' . $sql);
 
 			return $this->db;
 		}

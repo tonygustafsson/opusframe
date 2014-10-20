@@ -1,22 +1,21 @@
 <?php
 	class auth_module
 	{
-
 		public function __construct()
 		{
 			$this->opus =& opus::$instance;
 
-			$this->opus->load->require_modules(array('session', 'form', 'database'));
-
 			if (! session_id()) { session_start(); }
 
-			/* protect_all or protect_none, sets the default, can also be changed per controller method */
-			$this->method = "protect_all";
+			//If true, all pages will be password protected by default
+			$this->protect_all = TRUE;
 
+			//Overwrites $this->protect_all for specific pages
 			$this->restricted['movies/index'] = FALSE;
 			$this->restricted['movies/sort'] = FALSE;
 			$this->restricted['movies/search'] = FALSE;
 			$this->restricted['form/filter'] = FALSE;
+			$this->restricted['xml/sitemap'] = FALSE;
 
 			$this->require_user_activation = TRUE; //If true, the user has to activate his user via email
 
@@ -65,17 +64,18 @@
 										  'forgot_password', 'forgot_password_post', 'reset_password',
 										  'reset_password_post', 'logout');
 
-			//Om URLen inte finns behöver du inte loginrutan
-			if ($this->opus->config->area_name != $this->module_path && $is_restricted && $this->user['logged_in'] !== TRUE)
+			//Ignore methods that does not permitted
+			if ($this->opus->config->area_name == $this->module_path && ! in_array($this->opus->config->area_name, $this->url_accessible))
+				return;
+
+			//Show login view if the page is registricted and the user is not logged in
+			if ($is_restricted && $this->user['logged_in'] !== TRUE)
 			{
-				//If it's not a part of the auth module and it's restricted, redirect to login
+				//If it's not a part of the auth module, remember the URL for redirection
 				if ($this->opus->config->area_name != $this->module_path)
 					$_SESSION[$this->session_prev_url_field] = $this->opus->config->path;
 
-				$make_settings['wanted_fields'] =  array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
-				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
-
-				$this->opus->load->view('login', $data);
+				$this->login();
 			}
 		}
 
@@ -104,7 +104,7 @@
 				$this->opus->load->url($this->module_path . '/login');
 			}
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $user[$this->db_username_column] . ' logged in from ' . $_SERVER['REMOTE_ADDR']); }
+			$this->opus->log->write('info', $user[$this->db_username_column] . ' logged in from ' . $_SERVER['REMOTE_ADDR']);
 
 			//The user ID field says that the user is logged in
 			$_SESSION[$this->session_username_field] = $user[$this->db_username_column];
@@ -187,7 +187,7 @@
 						$this->opus->session->set_flash('error', 'Something went wrong when trying to email you.');
 				}
 
-				if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $_POST[$this->db_username_column] . ' registered from ' . $_SERVER['REMOTE_ADDR']); }
+				$this->opus->log->write('info', $_POST[$this->db_username_column] . ' registered from ' . $_SERVER['REMOTE_ADDR']);
 				$this->opus->load->url('/');
 			}
 			else
@@ -224,7 +224,7 @@
 			$update_settings['where'][$this->db_token_activation_column] = $user[$this->db_token_activation_column];
 			$update_output = $this->opus->database->update($update_settings);
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $user[$this->db_username_column] . ' activated the account.'); }
+			$this->opus->log->write('info', $user[$this->db_username_column] . ' activated the account.');
 
 			$this->opus->session->set_flash('success', 'You have successfully activated your user!');
 			$this->opus->load->url($this->module_path . '/login/');
@@ -269,7 +269,7 @@
 			$update_settings['where'][$this->db_id_column] = $user[$this->db_id_column];
 			$update_output = $this->opus->database->update($update_settings);
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $_POST[$this->db_username_column] . ' wants to reset the password.'); }
+			$this->opus->log->write('info', $_POST[$this->db_username_column] . ' wants to reset the password.');
 
 			//Send mail
 			$this->opus->email = $this->opus->load->module('email');
@@ -335,7 +335,7 @@
 				$this->opus->load->url($this->module_path . '/reset_password/' . $user[$this->db_token_reset_password_column]);
 			}
 
-			if ($this->opus->load->is_module_loaded('log')) { $this->opus->log->write('info', $user[$this->db_username_column] . ' resetted the password.'); }
+			$this->opus->log->write('info', $user[$this->db_username_column] . ' resetted the password.');
 
 			$this->opus->session->set_flash('success', 'You have successfully changed password.');
 			$this->opus->load->url($this->module_path . '/login/');
@@ -384,7 +384,7 @@
 		{
 			$restricted_array_key = $controller . '/' . $method_name;
 
-			if ($this->method == 'protect_none')
+			if (! $this->protect_all)
 			{
 				//Default permit everything
 				$is_restricted =  array_key_exists($restricted_array_key, $this->restricted) ? $this->restricted[$restricted_array_key] : FALSE;

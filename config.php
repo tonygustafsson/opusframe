@@ -7,22 +7,15 @@
 			$this->site_email = "movie.database@test.com";
 			$this->debug = FALSE;
 
-			//Installed modules: database, auth, cache
-			$this->autoload_modules = array(
-					'log',
-					'session',
-					'form',
-					'database',
-					'auth',
-					'url',
-					'xml',
-					'instagram'
-				);
+			//If true, a module will be loaded when called upon, like $this->opus->module->method()
+			$this->auto_load_modules = TRUE;
 
-			$this->cache = array(
-				'tony' => 10
-			);
-			
+			//If true, an URL that goes to /module/method and is url_accessible will be accessible
+			$this->auto_route_modules = TRUE;
+
+			//Preload modules that can interfere with normal work flow. auth and cache needs this to prevent controller loading
+			$this->pre_load_modules = array('auth');
+
 			$this->routes = array(
 				'default' => 'movies',
 				'404' =>	'404',
