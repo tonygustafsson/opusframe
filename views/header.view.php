@@ -23,17 +23,17 @@
 	<?php
 		if (isset($this->opus->auth->user['logged_in']) && $this->opus->auth->user['logged_in'] === TRUE)
 		{
-			echo '<p class="right"><span class="icon-lock"> <a href="' . $this->opus->config->base_url('auth/logout') . '">Log out, ' . $this->opus->auth->get_first_name() . '</a></p>';
+			echo '<p class="right"><span class="icon-lock"> <a href="' . $this->opus->url('auth/logout') . '">Log out, ' . $this->opus->auth->get_first_name() . '</a></p>';
 		}
 		else
 		{
-			echo '<p class="right"><span class="icon-lock"> <a href="' . $this->opus->config->base_url('auth/login') . '">Log in</a>';
-			echo ' <a href="' . $this->opus->config->base_url('auth/register') . '">Register</a></p>';
+			echo '<p class="right"><span class="icon-lock"> <a href="' . $this->opus->url('auth/login') . '">Log in</a>';
+			echo ' <a href="' . $this->opus->url('auth/register') . '">Register</a></p>';
 		}
 	?>
 
 	<header>
-		<h1><a href="<?= $this->opus->config->base_path ?>"><?= $this->opus->config->site_name ?></a></h1>
+		<h1><a href="<?= $this->opus->url['base'] ?>"><?= $this->opus->config->site_name ?></a></h1>
 	</header>
 
 	<article id="main">

@@ -6,7 +6,7 @@
 
 <h2>Register</h2>
 
-<form method="post" action="<?php echo $this->opus->config->base_url('auth/register_post'); ?>">
+<form method="post" action="<?php echo $this->opus->url('auth/register_post'); ?>">
 	<?= $form_elements ?>
 
 	<input type="submit" value="Register">

@@ -6,9 +6,10 @@
 		{	
 			$this->opus =& opus::$instance;
 
-			$this->cache_file = $this->opus->config->base_path_absolute . "cache/" . $this->opus->config->area_name . '_' . $this->opus->config->method_name . '.html';
-			$this->cache_file_modified = (array_key_exists($this->opus->config->area_name, $this->opus->config->cache) && file_exists($this->cache_file)) ? filemtime($this->cache_file) : 0;
-			$this->cache_max_time = (array_key_exists($this->opus->config->area_name, $this->opus->config->cache)) ? $this->opus->config->cache[$this->opus->config->area_name] : 0;
+			$this->cache_key = $this->opus->url['area'] . '/' . $this->opus->url['method'];
+			$this->cache_file = $this->opus->path['absolute'] . "/cache/" . $this->opus->url['area'] . '_' . $this->opus->url['method'] . '.html';
+			$this->cache_file_modified = (array_key_exists($this->cache_key, $this->opus->config->cache->pages) && file_exists($this->cache_file)) ? filemtime($this->cache_file) : 0;
+			$this->cache_max_time = (array_key_exists($this->cache_key, $this->opus->config->cache->pages)) ? $this->opus->config->cache->pages[$this->cache_key] : 0;
 
 			$this->has_cache_enabled = $this->has_cache_enabled();
 			$this->has_fresh_cache_file = $this->has_fresh_cache_file();
@@ -30,7 +31,7 @@
 
 		public function has_cache_enabled()
 		{
-			return array_key_exists($this->opus->config->area_name, $this->opus->config->cache);
+			return array_key_exists($this->cache_key, $this->opus->config->cache->pages);
 		}
 
 		public function has_fresh_cache_file()

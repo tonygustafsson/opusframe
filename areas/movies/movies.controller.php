@@ -15,21 +15,21 @@
 			$get_settings['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
 			$get_settings['get_total_rows'] = TRUE;
 
-			if (! empty($this->opus->url->get_parameter('sort')) && ! empty($this->opus->url->get_parameter('sort')))
-				$get_settings['order_by'] = $this->opus->url->get_parameter('sort') . ' ' . $this->opus->url->get_parameter('order');
+			if (! empty($this->opus->urlargs->get_parameter('sort')) && ! empty($this->opus->urlargs->get_parameter('sort')))
+				$get_settings['order_by'] = $this->opus->urlargs->get_parameter('sort') . ' ' . $this->opus->urlargs->get_parameter('order');
 
-			if (! empty($this->opus->url->get_parameter('search')))
-				$get_settings['where_like']['name'] = $this->opus->url->get_parameter('search');
+			if (! empty($this->opus->urlargs->get_parameter('search')))
+				$get_settings['where_like']['name'] = $this->opus->urlargs->get_parameter('search');
 
 			$filter_fields = array('genre' => 'checkboxes');
 			$data['filters'][] = $this->opus->form->make_filters($this->model->data_model, $filter_fields);
 
-			$pagination_page = (! empty($this->opus->url->get_parameter('page'))) ? $this->opus->url->get_parameter('page') : 1;
+			$pagination_page = (! empty($this->opus->urlargs->get_parameter('page'))) ? $this->opus->urlargs->get_parameter('page') : 1;
 			$get_settings['limit_count'] = 5;
 			$get_settings['limit_offset'] = ($pagination_page - 1) * $get_settings['limit_count'];
 
 			$data['movies'] = $this->opus->database->get_result($get_settings);
-			$data['sort_order_link'] = ($this->opus->url->get_parameter('order') == 'ASC') ? 'DESC' : 'ASC';
+			$data['sort_order_link'] = ($this->opus->urlargs->get_parameter('order') == 'ASC') ? 'DESC' : 'ASC';
 
 			$this->opus->pagination = $this->opus->load->module('pagination');
 			$data['pagination_links'] = $this->opus->pagination->make_links($data['movies']->total_rows);
@@ -74,9 +74,9 @@
 
 		public function edit()
 		{
-			$id = $this->opus->config->url_args[0];
+			$id = $this->opus->urlargs->get_parameter('id');
 
-			if (! empty($id))
+			if ($id)
 			{
 				$get_settings['data_model'] = $this->model->data_model;
 				$get_settings['select'] = array('id', 'name', 'genre', 'rating', 'seen', 'media_type', 'recommended');
@@ -114,15 +114,15 @@
 				$this->opus->session->set_flash('form_validation', $update_output->form_errors);
 				$this->opus->session->set_flash('form_values', $_POST);
 
-				$this->opus->load->url('movies/edit/' . $_POST['id']);	
+				$this->opus->load->url('movies/edit/id=' . $_POST['id']);	
 			}
 		}
 
 		public function remove()
 		{
-			$id = $this->opus->config->url_args[0];
+			$id = $this->opus->urlargs->get_parameter('id');
 
-			if (! empty($id))
+			if ($id)
 			{
 				$delete_settings['data_model'] = $this->model->data_model;
 				$delete_settings['where']['id'] = $id;
@@ -143,7 +143,7 @@
 			{
 				$item_id = $_SERVER['HTTP_X_ITEM_ID'];
 				$image_id = $_SERVER['HTTP_X_IMAGE_ID'];
-				$file_path = $this->opus->config->image_upload_path . 'movies/' . $item_id . '/' . $item_id . '_' . $image_id;
+				$file_path = $this->opus->config->path->image_upload . 'movies/' . $item_id . '/' . $item_id . '_' . $image_id;
 
 				echo $this->opus->form->image_upload($file_path, 'php://input');
 			}
@@ -153,8 +153,8 @@
 		{
 			if ($this->opus->load->is_ajax_request())
 			{
-				$item_id = $this->opus->url->get_parameter('item_id');
-				$image_id = $this->opus->url->get_parameter('image_id');
+				$item_id = $this->opus->urlargs->get_parameter('item_id');
+				$image_id = $this->opus->urlargs->get_parameter('image_id');
 
 				echo $this->opus->form->image_remove($item_id, $image_id);
 			}

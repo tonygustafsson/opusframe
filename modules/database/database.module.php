@@ -5,12 +5,10 @@
 		{
 			$this->opus =& opus::$instance;
 
-			$this->xss_encoding = "ISO8859-1";
-
-			$this->db = new mysqli( $this->opus->config->database['host'],
-									$this->opus->config->database['username'],
-									$this->opus->config->database['password'],
-									$this->opus->config->database['database']
+			$this->db = new mysqli( $this->opus->config->database->host,
+									$this->opus->config->database->username,
+									$this->opus->config->database->password,
+									$this->opus->config->database->database
 								);
 
 			if ($this->db->connect_errno > 0)

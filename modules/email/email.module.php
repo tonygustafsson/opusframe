@@ -6,23 +6,7 @@
 		{	
 			$this->opus =& opus::$instance;
 
-			$this->enable_emailing  = FALSE; //If false, only log to file for debugging
-
-			$this->smtp_host		= "localhost";
-			$this->smtp_port		= 25; //25 for SMTP, 587 for SMTP through SSL
-			$this->smtp_auth		= FALSE;
-			$this->smtp_user		= "";
-			$this->smtp_pass		= "";
-			$this->smtp_timeout		= 5; //Seconds
-			$this->command_retry_timeout = 0.1 * 1000000; //Microseconds
-			$this->command_retries	= 20; //command_retry_timeout times this number makes the total timeout for commands
-			$this->charset			= "utf-8";
-			$this->required_args	= array('to_email', 'to_name', 'subject', 'body', 'from_name', 'from_email', 'subject', 'body');
-
-			//These can be overwritten with input parameters
-			$this->from_name = $this->opus->config->site_name;
-			$this->from_email = $this->opus->config->site_email;
-			$this->html_format = TRUE;
+			$this->required_args = array('to_email', 'to_name', 'subject', 'body', 'from_name', 'from_email', 'subject', 'body');
 
 			$this->smtp_codes['service_ready'] = 220;
 			$this->smtp_codes['command_successfull'] = 250;
@@ -33,10 +17,10 @@
 			$this->smtp_codes['tls_accepted'] = 454;
 			$this->smtp_codes['connection_closed'] = 221;
 
-			if ($this->enable_emailing)
-				@$this->mail = fsockopen($this->smtp_host, $this->smtp_port, $errno, $errstr, $this->smtp_timeout);
+			if ($this->opus->config->email->enable_emailing)
+				@$this->mail = fsockopen($this->opus->config->email->smtp_host, $this->opus->config->email->smtp_port, $errno, $errstr, $this->opus->config->email->smtp_timeout);
 
-			if ($this->enable_emailing && ! $this->mail)
+			if ($this->opus->config->email->enable_emailing && ! $this->mail)
 					exit("ERROR: Failed to connect to SMTP server.");
 		}
 
@@ -49,7 +33,7 @@
 		{
 			$args['from_name'] = (isset($args['from_name'])) ? $args['from_name'] : $this->from_name;
 			$args['from_email'] = (isset($args['from_email'])) ? $args['from_email'] : $this->from_email;
-			$args['html_format'] = (isset($args['html_format'])) ? $args['html_format'] : $this->html_format;
+			$args['html_format'] = (isset($args['html_format'])) ? $args['html_format'] : $this->opus->config->email->html_format;
 
 			//Check if required arguments are available
 			foreach ($this->required_args as $required_arg)
@@ -60,7 +44,7 @@
 
 			$this->send_command("HELO " . $_SERVER['SERVER_NAME'], $this->smtp_codes['service_ready']);
 
-			if ($this->smtp_auth === TRUE)
+			if ($this->opus->config->email->smtp_auth === TRUE)
 			{
 				//Cannot make TLS work :(
 				//$this->send_command("STARTTLS", $this->smtp_codes['command_successfull']);
@@ -69,14 +53,14 @@
 				//Enable TLS encryption
 				//stream_socket_enable_crypto($this->mail, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT);
 
-				$this->send_command(base64_encode($this->smtp_user), $this->smtp_codes['user_ok']);
-				$this->send_command(base64_encode($this->smtp_pass), $this->smtp_codes['user_ok']);
+				$this->send_command(base64_encode($this->opus->config->email->smtp_user), $this->smtp_codes['user_ok']);
+				$this->send_command(base64_encode($this->opus->config->email->smtp_pass), $this->smtp_codes['user_ok']);
 			}
 
-			if (isset($args['from_name']) && isset($args['from_email']) && $this->smtp_auth !== TRUE)
+			if (isset($args['from_name']) && isset($args['from_email']) && $this->opus->config->email->smtp_auth !== TRUE)
 				$this->send_command("MAIL FROM: <" . $args['from_email'] . ">", $this->smtp_codes['command_successfull']);
 
-			if (isset($args['from_name']) && isset($args['from_email']) && $this->smtp_auth === TRUE)
+			if (isset($args['from_name']) && isset($args['from_email']) && $this->opus->config->email->smtp_auth === TRUE)
 				$this->send_command("MAIL FROM: <" . $args['from_email'] . ">", $this->smtp_codes['auth_ok']);
 
 			if (isset($args['to_name']) && isset($args['to_email']))
@@ -105,7 +89,7 @@
 			if (isset($args['html_format']) && $args['html_format'] === TRUE)
 			{
 				$this->send_command("MIME-Version: 1.0");
-				$this->send_command("Content-Type: text/html; charset=" . $this->charset);
+				$this->send_command("Content-Type: text/html; charset=" . $this->opus->config->email->charset);
 				$this->send_command("Content-Transfer-Encoding: quoted-printable");
 			}
 
@@ -121,10 +105,10 @@
 			//Send a command to the SMTP server, and first wait for a certain error code
 			$success = FALSE;
 
-			if (! $this->enable_emailing || $wanted_response_code === FALSE)
+			if (! $this->opus->config->email->enable_emailing || $wanted_response_code === FALSE)
 			{
 				//No need to wait for the right answer before sending.
-				if ($this->enable_emailing)
+				if ($this->opus->config->email->enable_emailing)
 				{
 					fwrite($this->mail, $command . "\r\n");
 				}
@@ -133,9 +117,9 @@
 			}
 			else
 			{
-				for ($x = 0; $x < $this->command_retries; $x++)
+				for ($x = 0; $x < $this->opus->config->email->command_retries; $x++)
 				{
-					usleep($this->command_retry_timeout);
+					usleep($this->opus->config->email->command_retry_timeout);
 					$smtp_response = $this->read_response();
 					$smtp_code = substr($smtp_response, 0, 3); //Get three first chars, like "250"
 
@@ -146,7 +130,7 @@
 
 					if ($smtp_code == $wanted_response_code)
 					{
-						if ($this->enable_emailing)
+						if ($this->opus->config->email->enable_emailing)
 						{
 							$this->opus->log->write('debug', 'SMTP Send (OK Response: ' . $wanted_response_code . '): ' . $command);
 							fwrite($this->mail, $command . "\r\n");
@@ -158,7 +142,7 @@
 				}
 			}
 
-			if ($this->enable_emailing && $success === FALSE)
+			if ($this->opus->config->email->enable_emailing && $success === FALSE)
 				exit('Could not send command: "' . $command . '". Aborting email.<p>');
 		}
 

@@ -7,8 +7,8 @@
 	}
 ?>
 
-<form id="form-search" method="post" action="<?=$this->opus->config->base_url('movies/search')?>">
-	<input type="search" name="search" id="search" autofocus value="<?= ((! empty($this->opus->url->get_parameter('search')) ? $this->opus->url->get_parameter('search') : '')) ?>" placeholder="Search for movie">
+<form id="form-search" method="post" action="<?=$this->opus->url('movies/search')?>">
+	<input type="search" name="search" id="search" autofocus value="<?= ((! empty($this->opus->urlargs->get_parameter('search')) ? $this->opus->urlargs->get_parameter('search') : '')) ?>" placeholder="Search for movie">
 	<input type="submit" value="Search">
 </form>
 
@@ -26,12 +26,12 @@
 <table id="movie_table">
 	<tr>
 		<th></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'name', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Name</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'genre', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Genre</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'rating', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Rating</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'seen', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Seen</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'media_type', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Media type</a></th>
-		<th><a href="<?=$this->opus->config->base_url('movies' . $this->opus->url->get_url(array('sort' => 'recommended', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Recommended</a></th>
+		<th><a href="<?=$this->opus->url('movies' . $this->opus->urlargs->get_url(array('sort' => 'name', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Name</a></th>
+		<th><a href="<?=$this->opus->url('movies' . $this->opus->urlargs->get_url(array('sort' => 'genre', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Genre</a></th>
+		<th><a href="<?=$this->opus->url('movies' . $this->opus->urlargs->get_url(array('sort' => 'rating', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Rating</a></th>
+		<th><a href="<?=$this->opus->url('movies' . $this->opus->urlargs->get_url(array('sort' => 'seen', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Seen</a></th>
+		<th><a href="<?=$this->opus->url('movies' . $this->opus->urlargs->get_url(array('sort' => 'media_type', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Media type</a></th>
+		<th><a href="<?=$this->opus->url('movies' . $this->opus->urlargs->get_url(array('sort' => 'recommended', 'order' => $sort_order_link)))?>"><span class="icon-menu"></span> Recommended</a></th>
 		<th></th>
 	</tr>
 
@@ -40,7 +40,7 @@
 		{
 			echo '<tr>';
 				echo '<td class="center"><img src="' . $this->opus->load->image('assets/images/uploads/movies/' . $movie->id . '/' . $movie->id . '_1.jpg') . '"></td>';
-				echo '<td><a href="' . $this->opus->config->base_url('movies/edit/' . $movie->id) . '">' . $movie->name . '</a></td>';
+				echo '<td><a href="' . $this->opus->url('movies/edit/id=' . $movie->id) . '">' . $movie->name . '</a></td>';
 				echo '<td>' . $movie->genre . '</td>';
 				echo '<td>' . $movie->rating . '</td>';
 				echo '<td>' . date('Y-m-d', strtotime($movie->seen)) . '</td>';
@@ -49,8 +49,8 @@
 				if ($this->opus->auth->user['logged_in'] === TRUE)
 				{
 					echo '	<td class="center">
-								<a class="no-underline" href="' . $this->opus->config->base_url('movies/edit/' . $movie->id) . '"><span class="icon-pencil"></span></a>
-								<a class="no-underline" href="' . $this->opus->config->base_url('movies/remove/' . $movie->id) . '"><span class="icon-remove"></span></a>
+								<a class="no-underline" href="' . $this->opus->url('movies/edit/id=' . $movie->id) . '"><span class="icon-pencil"></span></a>
+								<a class="no-underline" href="' . $this->opus->url('movies/remove/id=' . $movie->id) . '"><span class="icon-remove"></span></a>
 							</td>';
 					echo '</tr>';
 				}
@@ -61,7 +61,7 @@
 <p id="pagination-links"><?=$pagination_links?></p>
 
 <p>
-	<a href="<?=$this->opus->config->base_url('movies/create')?>">Create new movie</a>
+	<a href="<?=$this->opus->url('movies/create')?>">Create new movie</a>
 </p>
 
 <p>

@@ -162,9 +162,9 @@
 
 			if (isset($data_model['images_max']) && $data_model['images_max'] > 0)
 			{
-				if (isset($this->opus->config->url_args[0]))
-					$movie_id = $this->opus->config->url_args[0];
-				else
+				$movie_id = $this->opus->urlargs->get_parameter('id');
+
+				if (! $movie_id)
 				{
 					$movie_id = 'temp_' . uniqid(); //Temporary ID
 					$_SESSION['temp_item_id'] = $movie_id;
@@ -177,16 +177,16 @@
 
 						for ($x = 1; $x <= $data_model['images_max']; $x++)
 						{
-							$thumbs = glob($this->opus->config->image_upload_path . '/movies/' . $movie_id . '/' . $movie_id . '_' . $x . '.*');
-							$thumbnail = (! empty($thumbs)) ? $this->opus->config->path_to_url($thumbs[0]) : $this->opus->config->path_to_url($this->opus->config->image_add);
+							$thumbs = glob($this->opus->config->path->image_upload . '/movies/' . $movie_id . '/' . $movie_id . '_' . $x . '.*');
+							$thumbnail = (! empty($thumbs)) ? $this->opus->path_to_url($thumbs[0]) : $this->opus->path_to_url($this->opus->config->path->image_add);
 							$class = ($last_image_existed === FALSE && empty($thumbs)) ? 'hidden' : 'image_upload';
 							$last_image_existed = (! empty($thumbs)) ? TRUE : FALSE;
 
 							$html .= '
 								<section class="' . $class . '" id="images_upload_section_' . $x . '" data-image-id="' . $x . '">
-									<img title="Upload image" class="images_upload_thumb" id="thumb_' . $x . '" src="' . $thumbnail . '" data-image-loading-url="' . $this->opus->config->path_to_url($this->opus->config->image_loading) . '" data-no-image-url="' .$this->opus->config->path_to_url($this->opus->config->image_add) . '">
-									<a title="Remove image" class="remove-image-link" href="' . $this->opus->config->base_url . '/movies/image_remove/item_id=' . $movie_id . '/image_id=' . $x . '">
-										<img src="' . $this->opus->config->base_url('assets/images/remove.png') . '">
+									<img title="Upload image" class="images_upload_thumb" id="thumb_' . $x . '" src="' . $thumbnail . '" data-image-loading-url="' . $this->opus->path_to_url($this->opus->config->path->image_loading) . '" data-no-image-url="' .$this->opus->path_to_url($this->opus->config->path->image_add) . '">
+									<a title="Remove image" class="remove-image-link" href="' . $this->opus->url['base'] . '/movies/image_remove/item_id=' . $movie_id . '/image_id=' . $x . '">
+										<img src="' . $this->opus->url('assets/images/remove.png') . '">
 									</a>
 									<input type="file" id="images_file_upload_' . $x . '" class="images_upload_input" name="images_upload_input" accept="' . implode(', ', $data_model['images_accepted_types']) . '">
 									<output class="images_upload_error" id="images_upload_error_' . $x . '"></output>
@@ -207,7 +207,7 @@
 
 		public function make_filters($data_model, $fields)
 		{
-			$html = '<form method="post" action="' . $this->opus->config->base_url('form/filter') . '">';
+			$html = '<form method="post" action="' . $this->opus->url('form/filter') . '">';
 
 			foreach ($fields as $field => $filter_type)
 			{
@@ -360,7 +360,7 @@
 
 			$this->opus->log->write('info', 'Uploaded ' . $file);
 
-			return $this->opus->config->path_to_url($file);
+			return $this->opus->path_to_url($file);
 		}
 
 		public function save_temp_images($db_table, $new_id)
@@ -371,13 +371,13 @@
 			if (! isset($_SESSION['temp_item_id']))
 				return;
 
-			$new_path = $this->opus->config->image_upload_path . $db_table . '/' . $new_id;
+			$new_path = $this->opus->config->path->image_upload . $db_table . '/' . $new_id;
 
 			if (! file_exists($new_path))
 				mkdir($new_path);
 
 			$old_id = $_SESSION['temp_item_id'];
-			$old_path = $this->opus->config->image_upload_path . $db_table . '/' . $old_id;
+			$old_path = $this->opus->config->path->image_upload . $db_table . '/' . $old_id;
 
 			$counter = 1;
 
@@ -398,9 +398,9 @@
 			//Removes images, to remove all images for an item, do not specify image_id
 
 			if ($image_id === FALSE)
-				$file_path = $this->opus->config->image_upload_path . 'movies/' . $item_id . '/*';
+				$file_path = $this->opus->config->path->image_upload . 'movies/' . $item_id . '/*';
 			else
-				$file_path = $this->opus->config->image_upload_path . 'movies/' . $item_id . '/' . $item_id . '_' . $image_id . '.*';
+				$file_path = $this->opus->config->path->image_upload . 'movies/' . $item_id . '/' . $item_id . '_' . $image_id . '.*';
 	
 			$file_array = glob($file_path);
 
@@ -408,7 +408,7 @@
 				unlink($file);
 
 			if ($image_id === FALSE)
-				rmdir($this->opus->config->image_upload_path . 'movies/' . $item_id);
+				rmdir($this->opus->config->path->image_upload . 'movies/' . $item_id);
 
 			return "OK";
 		}

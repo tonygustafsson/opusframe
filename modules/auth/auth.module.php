@@ -7,18 +7,6 @@
 
 			if (! session_id()) { session_start(); }
 
-			//If true, all pages will be password protected by default
-			$this->protect_all = TRUE;
-
-			//Overwrites $this->protect_all for specific pages
-			$this->restricted['movies/index'] = FALSE;
-			$this->restricted['movies/sort'] = FALSE;
-			$this->restricted['movies/search'] = FALSE;
-			$this->restricted['form/filter'] = FALSE;
-			$this->restricted['xml/sitemap'] = FALSE;
-
-			$this->require_user_activation = TRUE; //If true, the user has to activate his user via email
-
 			$this->module_path = 'auth';
 
 			$this->db_id_column = "id";
@@ -56,7 +44,7 @@
 			if (isset($_SESSION[$this->session_ip_field]) && $_SESSION[$this->session_ip_field] !== $_SERVER['REMOTE_ADDR'])
 				$this->logout(); //If the user has changed IP, log out the user
 
-			$is_restricted = $this->is_restricted($this->opus->config->area_name, $this->opus->config->method_name);
+			$is_restricted = $this->is_restricted($this->opus->url['area'], $this->opus->url['method']);
 			$this->opus->prevent_controller_load = $is_restricted;
 
 			//Specify which methods can be loaded through a URL
@@ -65,15 +53,15 @@
 										  'reset_password_post', 'logout');
 
 			//Ignore methods that does not permitted
-			if ($this->opus->config->area_name == $this->module_path && ! in_array($this->opus->config->area_name, $this->url_accessible))
+			if ($this->opus->url['area'] == $this->module_path && ! in_array($this->opus->url['area'], $this->url_accessible))
 				return;
 
 			//Show login view if the page is registricted and the user is not logged in
 			if ($is_restricted && $this->user['logged_in'] !== TRUE)
 			{
 				//If it's not a part of the auth module, remember the URL for redirection
-				if ($this->opus->config->area_name != $this->module_path)
-					$_SESSION[$this->session_prev_url_field] = $this->opus->config->path;
+				if ($this->opus->url['area'] != $this->module_path)
+					$_SESSION[$this->session_prev_url_field] = $this->opus->url['relative'];
 
 				$this->login();
 			}
@@ -98,7 +86,7 @@
 				$this->opus->load->url($this->module_path . '/login');
 			}
 
-			if ($this->require_user_activation && (! isset($user) || $user[$this->db_activated_column] != 1))
+			if ($this->opus->config->auth->require_user_activation && (! isset($user) || $user[$this->db_activated_column] != 1))
 			{
 				$this->opus->session->set_flash('error', 'You need to activate your user before you can login. Please check your mail box.');
 				$this->opus->load->url($this->module_path . '/login');
@@ -137,10 +125,10 @@
 			$_POST[$this->db_password_column] = password_hash($_POST[$this->db_password_column], PASSWORD_DEFAULT);
 			$_POST[$this->db_activated_column] = 0;
 
-			if ($this->require_user_activation)
+			if ($this->opus->config->auth->require_user_activation)
 			{
 				$_POST[$this->db_token_activation_column] = uniqid();
-				$activation_link = $this->opus->config->base_url($this->module_path . '/activation/' . $_POST[$this->db_token_activation_column]);
+				$activation_link = $this->opus->url($this->module_path . '/activation/token=' . $_POST[$this->db_token_activation_column]);
 			}
 			else
 				$_POST[$this->db_token_activation_column] = "";
@@ -165,7 +153,7 @@
 
 			if (! isset($insert_output->form_errors))
 			{
-				if (! $this->require_user_activation)
+				if (! $this->opus->config->auth->require_user_activation)
 				{
 					//Don't log them in if we require activation first
 					$_SESSION[$this->session_ip_field] = $_SERVER['REMOTE_ADDR'];
@@ -201,13 +189,13 @@
 
 		public function activation()
 		{
-			if (! $this->require_user_activation)
+			if (! $this->opus->config->auth->require_user_activation)
 			{
 				$this->opus->session->set_flash('error', 'Activation is not needed.');
 				$this->opus->load->url('/');
 			}
 
-			$get_parameters[$this->db_token_activation_column] = $this->opus->config->url_args[0];
+			$get_parameters[$this->db_token_activation_column] = $this->opus->urlargs->get_parameter('token');
 			$user = $this->get_user($get_parameters, $by_pass_session_controll = TRUE);
 
 			if (! isset($user))
@@ -260,7 +248,7 @@
 
 			//Get a reset token
 			$reset_password_token = uniqid();
-			$reset_password_url = $this->opus->config->base_url($this->module_path . '/reset_password/' . $reset_password_token);
+			$reset_password_url = $this->opus->url($this->module_path . '/reset_password/token=' . $reset_password_token);
 			$_POST[$this->db_token_reset_password_column] = $reset_password_token;
 
 			//Write token to database
@@ -288,14 +276,14 @@
 
 		public function reset_password()
 		{
-			$get_parameter[$this->db_token_reset_password_column] = $this->opus->config->url_args[0];
+			$get_parameter[$this->db_token_reset_password_column] = $this->opus->urlargs->get_parameter('token');
 			$user = $this->get_user($get_parameter, $by_pass_session_controll = TRUE);
 
 			if (isset($user))
 			{
 				$make_settings['wanted_fields'] =  array($this->db_token_reset_password_column, $this->db_password_column, $this->db_verify_password_column);
 				$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
-				$make_settings['values'][$this->db_token_reset_password_column] = $this->opus->config->url_args[0];
+				$make_settings['values'][$this->db_token_reset_password_column] = $this->opus->urlargs->get_parameter('token');
 
 				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
@@ -384,15 +372,15 @@
 		{
 			$restricted_array_key = $controller . '/' . $method_name;
 
-			if (! $this->protect_all)
+			if ($this->opus->config->auth->protect_all !== TRUE)
 			{
 				//Default permit everything
-				$is_restricted =  array_key_exists($restricted_array_key, $this->restricted) ? $this->restricted[$restricted_array_key] : FALSE;
+				$is_restricted =  array_key_exists($restricted_array_key, $this->opus->config->auth->restricted) ? $this->opus->config->auth->restricted[$restricted_array_key] : FALSE;
 			}
 			else
 			{
 				//Default permit nothing
-				$is_restricted = array_key_exists($restricted_array_key, $this->restricted) ? $this->restricted[$restricted_array_key] : TRUE;
+				$is_restricted = array_key_exists($restricted_array_key, $this->opus->config->auth->restricted) ? $this->opus->config->auth->restricted[$restricted_array_key] : TRUE;
 			}
 
 			if ($is_restricted && (! isset($_SESSION[$this->session_ip_field]) || $_SESSION[$this->session_ip_field] != $_SERVER['REMOTE_ADDR']))

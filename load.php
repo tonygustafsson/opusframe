@@ -7,15 +7,17 @@
 			$this->opus =& opus::$instance;
 		}
 
-		public function controller($controller_name)
+		public function controller($area_name)
 		{
-			if (file_exists($this->opus->config->controller_path))
+			$controller_path = 'areas/' . $area_name . '/' . $area_name . '.controller.php';
+
+			if (file_exists($controller_path))
 			{
 				//Specific controller, incl default
-				require_once($this->opus->config->controller_path);
-				$class_name = $this->opus->config->area_name . '_controller';
+				require_once($controller_path);
+				$class_name = $this->opus->url['area'] . '_controller';
 				$controller = new $class_name();
-				$method_name = $this->opus->config->method_name;
+				$method_name = $this->opus->url['method'];
 				
 				if (method_exists($controller, $method_name))
 				{
@@ -57,7 +59,7 @@
 			else if (isset($backtrace['file']) && strpos($backtrace['file'], '.module.php') !== FALSE)
 				$view_path = dirname($backtrace['file']) . '/' . $view . '.view.php';
 			else
-				$view_path = $this->opus->config->base_path_absolute . '/views/' . $view . '.view.php';
+				$view_path = $this->opus->path['absolute'] . '/views/' . $view . '.view.php';
 
 			//Load the view
 			if (file_exists($view_path))
@@ -87,7 +89,7 @@
 			else if (isset($backtrace['file']) && strpos($backtrace['file'], '.module.php') !== FALSE)
 				$model_path = dirname($backtrace['file']) . '\\' . $model . '.model.php';
 			else
-				$model_path = $this->opus->config->base_path_absolute . '/models/' . $model . '.model.php';
+				$model_path = $this->opus->path['absolute'] . '/models/' . $model . '.model.php';
 					
 			if (file_exists($model_path))
 			{
@@ -100,18 +102,19 @@
 
 		public function css($css_file, $media = "all")
 		{
-			echo '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->config->style_path . $css_file . '">';
+			echo '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->config->path->css . $css_file . '">';
 		}
 
 		public function js($js_file)
 		{
-			echo '<script type="text/javascript" src="' . $this->opus->config->js_path . $js_file . '"></script>';
+			echo '<script type="text/javascript" src="' . $this->opus->config->path->js . $js_file . '"></script>';
 		}
 
 		public function url($url)
 		{
 			$url = ($url == "/") ? "" : $url;
-			$url = $this->opus->config->base_url($url);
+			$url = $this->opus->url($url);
+
 			header('Location: ' . $url);
 			exit;
 		}
@@ -119,12 +122,12 @@
 		public function image($path)
 		{
 			//Checks if the image exists and delivers it, if not, deliver a default image
-			$path = $this->opus->config->base_path_absolute . '/' . $path;
+			$path = $this->opus->path['absolute'] . '/' . $path;
 
 			if (file_exists($path))
-				return $this->opus->config->path_to_url($path);
+				return $this->opus->path_to_url($path);
 			else
-				return $this->opus->config->path_to_url($this->opus->config->image_missing);
+				return $this->opus->path_to_url($this->opus->config->path->image_missing);
 		}
 
 		public function is_ajax_request()

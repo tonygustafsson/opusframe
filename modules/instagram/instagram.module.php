@@ -5,24 +5,13 @@
 		public function __construct()
 		{	
 			$this->opus =& opus::$instance;
+			
 			$this->url_accessible = array('save_images', 'get_images');
-
-			$this->image_path = $this->opus->config->base_path_absolute . "/assets/images/instagram/";
-			$this->user_id = '1336819';
-			$this->no_instagram_images = 20; //From Instagram API, Max 33
-			$this->client_id = '3df4102f06814637b7f660639b409fa0';
-			$this->media_url = 'https://api.instagram.com/v1/users/' . $this->user_id . '/media/recent?client_id=' . $this->client_id . '&count=' . $this->no_instagram_images;
-		
-			$this->save_small_images = TRUE;
-			$this->save_medium_images = TRUE;
-			$this->save_large_images = TRUE;
-
-			$this->no_images = 10; //Images to get from cache
 		}
 
 		public function save_images()
 		{
-			$media_url = $this->media_url;
+			$media_url = $this->opus->config->instagram->media_url;
 
 			if (isset($_GET['min_id']))
 				$media_url .= '&min_id=' . $_GET['min_id'];
@@ -58,18 +47,18 @@
 				$caption = (isset($image->caption->text)) ? $image->caption->text : "";
 				$metadata = $created_time . '###' . $caption;
 
-				$metadata_path = $this->image_path . $image_id . '.txt';
-				$image_small_path = $this->image_path . $image_id . '-small.jpg';
-				$image_medium_path = $this->image_path . $image_id . '-medium.jpg';
-				$image_large_path = $this->image_path . $image_id . '-large.jpg';
+				$metadata_path = $this->opus->config->instagram->image_path . $image_id . '.txt';
+				$image_small_path = $this->opus->config->instagram->image_path . $image_id . '-small.jpg';
+				$image_medium_path = $this->opus->config->instagram->image_path . $image_id . '-medium.jpg';
+				$image_large_path = $this->opus->config->instagram->image_path . $image_id . '-large.jpg';
 				
-				if ($this->save_small_images)
+				if ($this->opus->config->instagram->save_small_images)
 						$this->save_image($image_small_url, $image_small_path);
 
-				if ($this->save_medium_images)
+				if ($this->opus->config->instagram->save_medium_images)
 						$this->save_image($image_medium_url, $image_medium_path);
 				
-				if ($this->save_large_images)
+				if ($this->opus->config->instagram->save_large_images)
 						$this->save_image($image_large_url, $image_large_path);
 
 				$this->save_metadata($metadata_path, $metadata);
@@ -114,11 +103,11 @@
 		public function get_images($count = FALSE, $offset = FALSE)
 		{
 			$metadata = array();
-			$count = ($count !== FALSE) ? $count : $this->no_images;
+			$count = ($count !== FALSE) ? $count : $this->opus->config->instagram->no_images;
 			$offset = ($offset !== FALSE) ? $offset : 0;
 
 			//Get already saved images from disk
-			$metadata_files = glob($this->image_path . "/*.txt", GLOB_NOSORT);
+			$metadata_files = glob($this->opus->config->instagram->image_path . "/*.txt", GLOB_NOSORT);
 			krsort($metadata_files);
 			$metadata_files = array_slice($metadata_files, $offset, $count);
 
@@ -133,18 +122,18 @@
 				$current_data['created_time'] = $content[0];
 				$current_data['caption'] = $content[1];
 
-				$large_image_path = $this->image_path . $id . '-large.jpg';
-				$medium_image_path = $this->image_path . $id . '-medium.jpg';
-				$small_image_path = $this->image_path . $id . '-small.jpg';
+				$large_image_path = $this->opus->config->instagram->image_path . $id . '-large.jpg';
+				$medium_image_path = $this->opus->config->instagram->image_path . $id . '-medium.jpg';
+				$small_image_path = $this->opus->config->instagram->image_path . $id . '-small.jpg';
 
-				if ($this->save_small_images && file_exists($small_image_path))
-					$current_data['small_image_url'] = $this->opus->config->path_to_url($small_image_path);
+				if ($this->opus->config->instagram->save_small_images && file_exists($small_image_path))
+					$current_data['small_image_url'] = $this->opus->path_to_url($small_image_path);
 
-				if ($this->save_medium_images && file_exists($medium_image_path))
-					$current_data['medium_image_url'] = $this->opus->config->path_to_url($medium_image_path);
+				if ($this->opus->config->instagram->save_medium_images && file_exists($medium_image_path))
+					$current_data['medium_image_url'] = $this->opus->path_to_url($medium_image_path);
 
-				if ($this->save_large_images && file_exists($large_image_path))
-					$current_data['large_image_url'] = $this->opus->config->path_to_url($large_image_path);
+				if ($this->opus->config->instagram->save_large_images && file_exists($large_image_path))
+					$current_data['large_image_url'] = $this->opus->path_to_url($large_image_path);
 
 				$metadata[] = $current_data;
 			}

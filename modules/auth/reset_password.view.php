@@ -11,7 +11,7 @@
 <?php
 	if (isset($form_elements))
 	{
-		echo '<form method="post" action="' . $this->opus->config->base_url('auth/reset_password_post') . '">';
+		echo '<form method="post" action="' . $this->opus->url('auth/reset_password_post') . '">';
 		echo $form_elements;
 		echo '<input type="submit" value="Reset password">';
 		echo '</form>';

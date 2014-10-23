@@ -1,5 +1,5 @@
 <?php
-	class url_module
+	class urlargs_module
 	{
 
 		public function __construct()
@@ -8,13 +8,10 @@
 
 			$this->parameters = array();
 
-			$segments = explode("/", $this->opus->config->path);
-			$segments = array_slice($segments, 1);
-
 			//Set correct parameters, the rest will be ignored
 			$this->parameter_values['order'] = array('ASC', 'DESC');
 
-			foreach ($segments as $segment)
+			foreach ($this->opus->url['path_parts'] as $segment)
 			{
 				if (strpos($segment, '=') !== false)
 				{
@@ -24,8 +21,6 @@
 					$this->parameters[$segment_key] = $segment_value;
 				}
 			}
-
-			$this->segments = $segments;
 		}
 
 		public function get_parameter($key)

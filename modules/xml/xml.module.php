@@ -4,28 +4,21 @@
         public function __construct()
         {   
             $this->opus =& opus::$instance;
+
             $this->url_accessible = array('sitemap', 'sitemap_gzip');
-
-            $this->standard_priority = "0.5";
-            $this->standard_freq = "weekly";
-
-            $this->pages = array(
-                    array('loc' => 'movies', 'changefreq' => 'daily', 'priority' => '1'),
-                    array('loc' => 'movies/create')
-            );
         }
 
         public function sitemap()
         {
             header('Content-type: text/xml');
-            echo $this->create_sitemap($this->pages);
+            echo $this->create_sitemap($this->opus->config->xml->rss_pages);
 
             $this->opus->log->write('info', 'Generated sitemap.xml by IP ' . $_SERVER['REMOTE_ADDR']);
         }
 
         public function sitemap_gzip()
         {
-            $compressed_sitemap = gzencode($this->create_sitemap($this->pages));
+            $compressed_sitemap = gzencode($this->create_sitemap($this->opus->config->xml->rss_pages));
 
             header("Content-type: application/zip");
             header("Content-Transfer-Encoding: Binary");
@@ -52,10 +45,10 @@
                 if (!$page['loc'])
                     return;
 
-                $page['changefreq'] = (isset($page['changefreq'])) ? $page['changefreq'] : $this->standard_freq;
-                $page['priority'] = (isset($page['priority'])) ? $page['priority'] : $this->standard_priority;
+                $page['changefreq'] = (isset($page['changefreq'])) ? $page['changefreq'] : $this->opus->config->xml->rss_standard_freq;
+                $page['priority'] = (isset($page['priority'])) ? $page['priority'] : $this->opus->config->xml->rss_standard_priority;
 
-                $page['loc'] = $this->opus->config->base_url($page['loc']);
+                $page['loc'] = $this->opus->url($page['loc']);
 
                 $url = $xml->addChild('url');
                 $url->addChild('loc', $page['loc']);
