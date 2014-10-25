@@ -61,7 +61,10 @@
 			{
 				//Page does not exist (no controller found, no module reroute found)
 				header("HTTP/1.0 404 Not Found");
-				$this->load->view('404');
+
+				$view_data['page_title'] = '404 Not Found';
+				$view_data['partial'] = $this->load->view('404', array(), TRUE);
+				$this->load->view('template', $view_data);
 			}
 		}
 
@@ -151,13 +154,9 @@
 				}
 			}
 
-			//Save outputted views to $contents
-			$contents = ob_get_contents();
-			ob_end_clean();
-			
 			//Output the content to the browser
-			echo $contents;
-
+			ob_end_flush();
+			
 			if ($this->config->debug)
 			{
 				echo '<pre id="debug">';

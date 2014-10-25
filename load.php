@@ -49,28 +49,36 @@
 			}
 		}
 
-		public function view($view, $data = FALSE)
+		public function view($view, $data = FALSE, $load_as_variable = FALSE)
 		{
-			//Get view path depending on if the caller method is a controller, a module or something else
-			$backtrace = debug_backtrace()[0];
+			$debug_backtrace = debug_backtrace();
+			$current_path = dirname($debug_backtrace[0]['file']);
 
-			if (isset($backtrace['file']) && strpos($backtrace['file'], '.controller.php') !== FALSE)
-				$view_path = dirname($backtrace['file']) . '/' . $view . '.view.php';
-			else if (isset($backtrace['file']) && strpos($backtrace['file'], '.module.php') !== FALSE)
-				$view_path = dirname($backtrace['file']) . '/' . $view . '.view.php';
-			else
+			//Check if view file exists in the current folder, if not - check /views
+			if (file_exists($current_path . '/' . $view . '.view.php'))
+				$view_path = $current_path . '/' . $view . '.view.php';
+			else if (file_exists($this->opus->path['absolute'] . '/views/' . $view . '.view.php'))
 				$view_path = $this->opus->path['absolute'] . '/views/' . $view . '.view.php';
+			else
+				throw new Exception("Could not find view '" . $view . "'.");
 
-			//Load the view
-			if (file_exists($view_path))
+			//Extract data to variables, $data['test'] = $test
+			if ($data)
+				extract($data);
+
+			if ($load_as_variable)
 			{
-				if ($data)
-					extract($data);
-				
-				include($view_path);
+				//Load the view	as a variable		
+				ob_start();
+				include($view_path); //Include view file
+				$view_data = ob_get_contents();
+				ob_end_clean();
+				return $view_data;
 			}
 			else
-				echo 'View ' . $view_path . ' was not found.';
+			{
+				include($view_path); //Include view file
+			}
 		}
 
 		public function model($model)

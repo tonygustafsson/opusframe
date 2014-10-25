@@ -70,9 +70,11 @@
 		public function login()
 		{
 			$make_settings['wanted_fields'] = array($this->db_username_column, $this->db_password_column, $this->remember_session_field);
-			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
+			$login_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			$this->opus->load->view('login', $data);
+			$data['page_title'] = "Login";
+			$data['partial'] = $this->opus->load->view('login', $login_data, TRUE);
+			$this->opus->load->view('template', $data);
 		}
 
 		public function login_post()
@@ -114,9 +116,11 @@
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
-			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
+			$register_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			$this->opus->load->view('register', $data);
+			$data['page_title'] = "Register";
+			$data['partial'] = $this->opus->load->view('register', $register_data, TRUE);
+			$this->opus->load->view('template', $data);
 		}
 
 		public function register_post()
@@ -224,9 +228,11 @@
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
-			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
+			$forgot_password_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			$this->opus->load->view('forgot_password', $data);
+			$data['page_title'] = "Forgot password";
+			$data['partial'] = $this->opus->load->view('forgot_password', $forgot_password_data, TRUE);
+			$this->opus->load->view('template', $data);
 		}
 
 		public function forgot_password_post()
@@ -285,9 +291,11 @@
 				$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 				$make_settings['values'][$this->db_token_reset_password_column] = $this->opus->urlargs->get_parameter('token');
 
-				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
+				$reset_password_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				$this->opus->load->view('reset_password', $data);
+				$data['page_title'] = "Reset password";
+				$data['partial'] = $this->opus->load->view('reset_password', $reset_password_data, TRUE);
+				$this->opus->load->view('template', $data);
 			}
 			else
 			{

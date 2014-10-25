@@ -22,19 +22,23 @@
 				$get_settings['where_like']['name'] = $this->opus->urlargs->get_parameter('search');
 
 			$filter_fields = array('genre' => 'checkboxes');
-			$data['filters'][] = $this->opus->form->make_filters($this->model->data_model, $filter_fields);
+			$list_data['filters'][] = $this->opus->form->make_filters($this->model->data_model, $filter_fields);
 
 			$pagination_page = (! empty($this->opus->urlargs->get_parameter('page'))) ? $this->opus->urlargs->get_parameter('page') : 1;
 			$get_settings['limit_count'] = 5;
 			$get_settings['limit_offset'] = ($pagination_page - 1) * $get_settings['limit_count'];
 
-			$data['movies'] = $this->opus->database->get_result($get_settings);
-			$data['sort_order_link'] = ($this->opus->urlargs->get_parameter('order') == 'ASC') ? 'DESC' : 'ASC';
+			$list_data['movies'] = $this->opus->database->get_result($get_settings);
+			$list_data['sort_order_link'] = ($this->opus->urlargs->get_parameter('order') == 'ASC') ? 'DESC' : 'ASC';
 
 			$this->opus->pagination = $this->opus->load->module('pagination');
-			$data['pagination_links'] = $this->opus->pagination->make_links($data['movies']->total_rows);
+			$list_data['pagination_links'] = $this->opus->pagination->make_links($list_data['movies']->total_rows);
 
-			$this->opus->load->view('list', $data);
+			$view_data['page_title'] = 'List';
+			$view_data['page_description'] = "A demo page for OpusFrame";
+			$view_data['page_keywords'] = "opusframe, demo, movie database";
+			$view_data['partial'] = $this->opus->load->view('list', $list_data, TRUE);
+			$this->opus->load->view('template', $view_data);
 		}
 
 		public function create()
@@ -43,9 +47,13 @@
 			$make_settings['validation_errors'] = $this->opus->session->get_flash('form_validation');
 			$make_settings['values'] = $this->opus->session->get_flash('form_values');
 
-			$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
+			$create_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-			$this->opus->load->view('create', $data);
+			$view_data['page_title'] = 'Create';
+			$view_data['page_description'] = "A demo page for OpusFrame";
+			$view_data['page_keywords'] = "opusframe, create, movie, add";
+			$view_data['partial'] = $this->opus->load->view('create', $create_data, TRUE);
+			$this->opus->load->view('template', $view_data);
 		}
 		
 		public function create_post()
@@ -94,9 +102,13 @@
 				else
 					$make_settings['values'] = $movie_info;
 
-				$data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
+				$edit_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
-				$this->opus->load->view('edit', $data);
+				$view_data['page_title'] = 'Edit';
+				$view_data['page_description'] = "A demo page for OpusFrame";
+				$view_data['page_keywords'] = "opusframe, edit, movie, change";
+				$view_data['partial'] = $this->opus->load->view('edit', $edit_data, TRUE);
+				$this->opus->load->view('template', $view_data);
 			}
 		}
 
