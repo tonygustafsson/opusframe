@@ -146,7 +146,7 @@
 		public function __construct()
 		{
 			$this->auto_load = TRUE;
-			$this->auto_route = FALSE;
+			$this->auto_route = TRUE;
 
 			$this->opus =& opus::$instance;
 
@@ -169,7 +169,7 @@
 		public function __construct()
 		{
 			$this->auto_load = TRUE;
-			$this->auto_route = FALSE;
+			$this->auto_route = TRUE;
 
 			$this->opus =& opus::$instance;
 
@@ -181,7 +181,9 @@
 			$this->level = 4;
 
 			$this->path = $this->opus->path['absolute'] . '/logs/';
-			$this->file_name = date("Ymd") . '.log';
+			$this->title_date_format = "Y-m-d"; //For title in log viewer
+			$this->file_date_format = "Ymd";
+			$this->current_file_name = $this->file_date_format . '.log';
 			$this->time_format = "H:i:s";
 			$this->file_method = "a"; //a = Open for writing only, pointer at the end of the file. Create if not exists.
 			$this->history_keep = 90; //Keep log files newer than # days

@@ -25,6 +25,24 @@ table {
 	width: 100%;
 }
 
+th {
+	text-align: left;
+	background: #f0f0f0;
+	padding: .5em;
+}
+
+th a {
+	text-decoration: none;
+}
+
+tr:nth-child(odd) {
+	background: #f3f3f3;
+}
+
+td {
+	padding: .5em;
+}
+
 .center {
 	text-align: center;
 }
@@ -39,19 +57,6 @@ table {
 
 .no-underline {
 	text-decoration: none;
-}
-
-th {
-	text-align: left;
-	background: #f0f0f0;
-}
-
-th a {
-	text-decoration: none;
-}
-
-tr:nth-child(odd) {
-	background: #f3f3f3;
 }
 
 label {
