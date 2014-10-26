@@ -50,6 +50,8 @@
 			else if (
 				isset($this->$area_name)
 				&& method_exists($this->$area_name, $method_name)
+				&& isset($this->config->$area_name->auto_route)
+				&& $this->config->$area_name->auto_route === TRUE
 				&& isset($this->$area_name->url_accessible)
 				&& in_array($method_name, $this->$area_name->url_accessible)
 			)
