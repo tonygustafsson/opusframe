@@ -17,8 +17,9 @@
 			<meta name="keywords" content="<?=$page_keywords?>">
 		<?php endif; ?>
 
-		<?php $this->opus->load->css('base.css') ?>
-		<?php $this->opus->load->css('custom.css') ?>
+		<?php if (isset($css)): ?>
+			<?php echo $css ?>
+		<?php endif; ?>
 
 		<meta charset="utf-8">
 	</head>
@@ -59,11 +60,13 @@
 <?php if (! $this->opus->load->is_ajax_request()): ?>
 		</article>
 
-		<?php $this->opus->load->js('main.js'); ?>
-
 		<footer>
 			<p>This is an example site.</p>
 		</footer>
+
+		<?php if (isset($js)): ?>
+			<?php echo $js ?>
+		<?php endif; ?>
 
 	</body>
 	</html>

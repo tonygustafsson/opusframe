@@ -108,14 +108,90 @@
 				echo 'Could not find model ' . $model_path;
 		}
 
-		public function css($css_file, $media = "all")
+		public function css($css_files, $media = "all")
 		{
-			echo '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->config->path->css . $css_file . '">';
+			if (! is_array($css_files))
+			{
+				//Get a single CSS file
+				return '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $this->opus->path['relative'] . $this->opus->config->path->css . $css_files . '.css' . '">';
+			}
+			else
+			{
+				//Get more than one CSS file and bundle them
+				$name = implode("_", $css_files);
+				
+				$bundle_path = $this->opus->path['absolute'] . $this->opus->config->path->css . $this->opus->config->css_bundle_prefix . $name . '.css';
+				$bundle_url = $this->opus->path['relative'] . $this->opus->config->path->css . $this->opus->config->css_bundle_prefix . $name . '.css';
+
+				if (! $bundle_created = @filemtime($bundle_path))
+					$bundle_created = 0;
+
+				$bundle_url .= '?' . date("ymdHis", $bundle_created);
+
+				//Fresh bundle already exist, deliver link to it
+				if ($bundle_created > (time() - ($this->opus->config->css_bundle_cache_timeout * 60)))
+					return '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $bundle_url . '">';
+
+				$bundle = "/* Bundled at " . date("c") . " */";
+
+				foreach ($css_files as $css_file)
+				{
+					$current_css_file = $this->opus->path['absolute'] . $this->opus->config->path->css . $css_file . '.css';
+					$bundle .= "\r\n\r\n/* CSS file: " . $css_file . ".css */\r\n";
+					$bundle .= file_get_contents($current_css_file);
+				}
+
+				$fp = fopen($bundle_path, 'w');
+				fwrite($fp, $bundle);
+				fclose($fp);
+
+				$this->opus->log->write('info', 'Creating CSS bundle bundle_' . $name . '.css');
+
+				return '<link rel="stylesheet" type="text/css" media="' . $media . '" href="' . $bundle_url . '">';
+			}
 		}
 
-		public function js($js_file)
+		public function js($js_files)
 		{
-			echo '<script type="text/javascript" src="' . $this->opus->config->path->js . $js_file . '"></script>';
+			if (! is_array($js_files))
+			{
+				//Get a single JS file
+				return '<script type="text/javascript" src="' . $this->opus->path['relative'] . $this->opus->config->path->js . $js_files . '.js' . '"></script>';
+			}
+			else
+			{
+				//Get more than one JS file and bundle them
+				$name = implode("_", $js_files);
+				
+				$bundle_path = $this->opus->path['absolute'] . $this->opus->config->path->js . $this->opus->config->js_bundle_prefix . $name . '.js';
+				$bundle_url = $this->opus->path['relative'] . $this->opus->config->path->js . $this->opus->config->js_bundle_prefix . $name . '.js';
+
+				if (! $bundle_created = @filemtime($bundle_path))
+					$bundle_created = 0;
+
+				$bundle_url .= '?' . date("ymdHis", $bundle_created);
+
+				//Fresh bundle already exist, deliver link to it
+				if ($bundle_created > (time() - ($this->opus->config->js_bundle_cache_timeout * 60)))
+					return '<script type="text/javascript" src="' . $bundle_url . '"></script>';
+
+				$bundle = "/* Bundled at " . date("c") . " */";
+
+				foreach ($js_files as $js_file)
+				{
+					$current_js_file = $this->opus->path['absolute'] . $this->opus->config->path->js . $js_file . '.js';
+					$bundle .= "\r\n\r\n/* JS file: " . $js_file . ".js */\r\n";
+					$bundle .= file_get_contents($current_js_file);
+				}
+
+				$fp = fopen($bundle_path, 'w');
+				fwrite($fp, $bundle);
+				fclose($fp);
+
+				$this->opus->log->write('info', 'Creating JavaScript bundle bundle_' . $name . '.js');
+
+				return '<script type="text/javascript" src="' . $bundle_url . '"></script>';
+			}
 		}
 
 		public function url($url)

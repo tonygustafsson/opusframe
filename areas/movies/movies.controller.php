@@ -37,6 +37,8 @@
 			$view_data['page_title'] = 'List';
 			$view_data['page_description'] = "A demo page for OpusFrame";
 			$view_data['page_keywords'] = "opusframe, demo, movie database";
+			$view_data['css'] = $this->opus->load->css(array('base', 'custom'));
+			$view_data['js'] = $this->opus->load->js('main');
 			$view_data['partial'] = $this->opus->load->view('list', $list_data, TRUE);
 			$this->opus->load->view('template', $view_data);
 		}
@@ -52,6 +54,8 @@
 			$view_data['page_title'] = 'Create';
 			$view_data['page_description'] = "A demo page for OpusFrame";
 			$view_data['page_keywords'] = "opusframe, create, movie, add";
+			$view_data['css'] = $this->opus->load->css(array('base', 'custom'));
+			$view_data['js'] = $this->opus->load->js('main');
 			$view_data['partial'] = $this->opus->load->view('create', $create_data, TRUE);
 			$this->opus->load->view('template', $view_data);
 		}
@@ -107,6 +111,8 @@
 				$view_data['page_title'] = 'Edit';
 				$view_data['page_description'] = "A demo page for OpusFrame";
 				$view_data['page_keywords'] = "opusframe, edit, movie, change";
+				$view_data['css'] = $this->opus->load->css(array('base', 'custom'));
+				$view_data['js'] = $this->opus->load->js('main');
 				$view_data['partial'] = $this->opus->load->view('edit', $edit_data, TRUE);
 				$this->opus->load->view('template', $view_data);
 			}

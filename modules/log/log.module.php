@@ -35,6 +35,7 @@
 			$log_data['next_link'] = $this->opus->url('log/view/date=' . date("Y-m-d", $tomorrow));
 
 			$view_data['page_title'] = 'View logs';
+			$view_data['css'] = $this->opus->load->css(array('base', 'custom'));
 			$view_data['partial'] = $this->opus->load->view('list', $log_data, TRUE);
 			$this->opus->load->view('template', $view_data);
 		}

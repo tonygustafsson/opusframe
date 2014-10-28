@@ -73,6 +73,7 @@
 			$login_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
 			$data['page_title'] = "Login";
+			$data['css'] = $this->opus->load->css(array('base', 'custom'));
 			$data['partial'] = $this->opus->load->view('login', $login_data, TRUE);
 			$this->opus->load->view('template', $data);
 		}
@@ -119,6 +120,7 @@
 			$register_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
 			$data['page_title'] = "Register";
+			$data['css'] = $this->opus->load->css(array('base', 'custom'));
 			$data['partial'] = $this->opus->load->view('register', $register_data, TRUE);
 			$this->opus->load->view('template', $data);
 		}
@@ -231,6 +233,7 @@
 			$forgot_password_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
 			$data['page_title'] = "Forgot password";
+			$data['css'] = $this->opus->load->css(array('base', 'custom'));
 			$data['partial'] = $this->opus->load->view('forgot_password', $forgot_password_data, TRUE);
 			$this->opus->load->view('template', $data);
 		}
@@ -294,6 +297,7 @@
 				$reset_password_data['form_elements'] = $this->opus->form->make($this->model->data_model, $make_settings);
 
 				$data['page_title'] = "Reset password";
+				$data['css'] = $this->opus->load->css(array('base', 'custom'));
 				$data['partial'] = $this->opus->load->view('reset_password', $reset_password_data, TRUE);
 				$this->opus->load->view('template', $data);
 			}

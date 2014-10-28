@@ -1,4 +1,6 @@
 *.log
+*bundle_*.css
+*bundle_*.js
 cache/*
 assets/images/instagram/*
 areas/images/*

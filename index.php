@@ -65,6 +65,7 @@
 				header("HTTP/1.0 404 Not Found");
 
 				$view_data['page_title'] = '404 Not Found';
+				$view_data['css'] = $this->opus->load->css(array('base', 'custom'));
 				$view_data['partial'] = $this->load->view('404', array(), TRUE);
 				$this->load->view('template', $view_data);
 			}

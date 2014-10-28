@@ -7,6 +7,10 @@
 
 			$this->site_name = "Movie Database";
 			$this->site_email = "movie.database@test.com";
+			$this->css_bundle_cache_timeout = (1 * 60 * 24 * 7); //Minutes before refreshing a CSS bundle
+			$this->js_bundle_cache_timeout = (1 * 60 * 24 * 7); //Minutes before refreshing a JS bundle
+			$this->css_bundle_prefix = 'bundle_';
+			$this->js_bundle_prefix = 'bundle_';
 			$this->debug = FALSE;
 
 			//Preload modules that can interfere with normal work flow. auth and cache needs this to prevent controller loading
@@ -40,8 +44,8 @@
 		{
 			$this->opus =& opus::$instance;
 
-			$this->css = $this->opus->path['relative'] . '/assets/css/';
-			$this->js = $this->opus->path['relative'] . '/assets/js/';
+			$this->css = '/assets/css/';
+			$this->js = '/assets/js/';
 
 			$this->image_upload = $this->opus->path['absolute'] . '/assets/images/uploads/';
 			$this->image_missing = $this->opus->path['absolute'] . '/assets/images/image_missing.png';
@@ -68,7 +72,7 @@
 		public function __construct()
 		{
 			$this->auto_load = TRUE;
-			$this->auto_route = FALSE;
+			$this->auto_route = TRUE;
 
 			//If TRUE, all pages will be password protected by default
 			$this->protect_all = TRUE;
@@ -183,7 +187,7 @@
 			$this->path = $this->opus->path['absolute'] . '/logs/';
 			$this->title_date_format = "Y-m-d"; //For title in log viewer
 			$this->file_date_format = "Ymd";
-			$this->current_file_name = $this->file_date_format . '.log';
+			$this->current_file_name = date($this->file_date_format) . '.log';
 			$this->time_format = "H:i:s";
 			$this->file_method = "a"; //a = Open for writing only, pointer at the end of the file. Create if not exists.
 			$this->history_keep = 90; //Keep log files newer than # days
