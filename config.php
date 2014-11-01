@@ -5,8 +5,9 @@
 		{
 			$this->opus =& opus::$instance;
 
-			$this->site_name = "Movie Database";
-			$this->site_email = "movie.database@test.com";
+			$this->base_url = '/opusframe/'; //Just '/' if root
+			$this->site_name = 'Movie Database';
+			$this->site_email = 'movie.database@test.com';
 			$this->css_bundle_cache_timeout = (1 * 60 * 24 * 7); //Minutes before refreshing a CSS bundle
 			$this->js_bundle_cache_timeout = (1 * 60 * 24 * 7); //Minutes before refreshing a JS bundle
 			$this->css_bundle_prefix = 'bundle_';
