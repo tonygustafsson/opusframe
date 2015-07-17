@@ -8,10 +8,6 @@
 			$this->base_url = '/opusframe/'; //Just '/' if root
 			$this->site_name = 'Movie Database';
 			$this->site_email = 'movie.database@test.com';
-			$this->css_bundle_cache_timeout = (1 * 60 * 24 * 7); //Minutes before refreshing a CSS bundle
-			$this->js_bundle_cache_timeout = (1 * 60 * 24 * 7); //Minutes before refreshing a JS bundle
-			$this->css_bundle_prefix = 'bundle_';
-			$this->js_bundle_prefix = 'bundle_';
 			$this->debug = FALSE;
 
 			//Preload modules that can interfere with normal work flow. auth and cache needs this to prevent controller loading
