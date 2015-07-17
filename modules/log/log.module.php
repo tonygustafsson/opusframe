@@ -7,6 +7,11 @@
 
 			$this->url_accessible = array('view');
 
+			//Create log path if it does not already exist
+			if (! file_exists($this->opus->config->log->path))
+				mkdir($this->opus->config->log->path);
+
+			//Create new log file if does not already exist
 			if (! file_exists($this->opus->config->log->path . $this->opus->config->log->current_file_name))
 				$this->remove_old_log_files();
 		}
