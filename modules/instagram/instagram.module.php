@@ -3,14 +3,14 @@
 	{
 
 		public function __construct()
-		{	
+		{
 			$this->opus =& opus::$instance;
-			
+
 			$this->index_image_delimiter = "\r\n";
 			$this->index_value_delimiter = "###";
 			$this->index_file = $this->opus->config->instagram->image_path . 'index.txt';
 
-			$this->url_accessible = array('save_images', 'get_images');
+			$this->url_accessible = array('save_token', 'save_images', 'get_images');
 		}
 
 		public function get_images($count = FALSE, $offset = FALSE)
@@ -75,9 +75,69 @@
 				$index[$image_item_id]['caption'] = $image_item_caption;
 			}
 
-			krsort($index);
-
 			return $index;
+		}
+
+		public function get_token()
+		{
+			// Get token from disk
+			if (file_exists($this->opus->config->instagram->token_path))
+			{
+				$file = fopen($this->opus->config->instagram->token_path, "r");
+				$token = fread($file, filesize($this->opus->config->instagram->token_path));
+				fclose($file);
+
+				return trim($token);
+			}
+
+			return "";
+		}
+
+		public function save_token()
+		{
+			if (isset($this->opus->url['query']['code']))
+			{
+				// Redirects back here with code
+				$this->opus->log->write('info', 'Instagram: Recieved code is: ' . $this->opus->url['query']['code']);
+
+				$query = array (
+					'client_id' => $this->opus->config->instagram->client_id,
+					'client_secret' => $this->opus->config->instagram->client_secret,
+					'grant_type' => 'authorization_code',
+					'redirect_uri' => $this->opus->config->instagram->redirect_uri,
+					'code' => $this->opus->url['query']['code']
+				);
+
+				$ch = curl_init($this->opus->config->instagram->get_access_token_uri);
+
+				curl_setopt($ch, CURLOPT_POST, TRUE);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
+				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+
+				$data = curl_exec($ch);
+				$json = json_decode($data);
+				curl_close($ch);
+
+				if (! empty($json->access_token))
+				{
+					$this->opus->log->write('info', 'Instagram: Saving access token: ' . $json->access_token);
+
+					$file = fopen($this->opus->config->instagram->token_path, "w");
+					fwrite($file, $json->access_token);
+					fclose($file);
+				}
+
+			}
+			else
+			{
+				// If no code is recieved, redirect to instragram auth and be redirected back here
+				$this->opus->log->write('info', 'Instagram: Redirecting to: ' . $this->opus->config->instagram->get_code_uri);
+
+				header('Location: ' . $this->opus->config->instagram->get_code_uri);
+			}
 		}
 
 		public function save_index($index)
@@ -94,7 +154,8 @@
 
 		public function save_images()
 		{
-			$media_url = $this->opus->config->instagram->media_url;
+			$access_token = $this->get_token();
+			$media_url = $this->opus->config->instagram->media_url . '&access_token=' . $access_token;
 			$existing_index = $this->get_index();
 			$new_index = array();
 
@@ -108,9 +169,9 @@
 			$ch = curl_init($media_url);
 
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
 
 			$data = curl_exec($ch);
 			$json = json_decode($data);
@@ -126,6 +187,8 @@
 				if (! array_key_exists($image->id, $existing_index))
 				{
 					//This image is not in the existing index!
+					echo '<p>Image ID does not exist: ' . $image->id . '</p>';
+
 					$created_time = $image->created_time;
 					$caption = (isset($image->caption->text)) ? $image->caption->text : "";
 
@@ -141,24 +204,24 @@
 				$image_small_path = $this->opus->config->instagram->image_path . $image->id . '-small.jpg';
 				$image_medium_path = $this->opus->config->instagram->image_path . $image->id . '-medium.jpg';
 				$image_large_path = $this->opus->config->instagram->image_path . $image->id . '-large.jpg';
-				
+
 				if ($this->opus->config->instagram->save_small_images)
 						$this->save_image($image_small_url, $image_small_path);
 
 				if ($this->opus->config->instagram->save_medium_images)
 						$this->save_image($image_medium_url, $image_medium_path);
-				
+
 				if ($this->opus->config->instagram->save_large_images)
 						$this->save_image($image_large_url, $image_large_path);
 			}
 
 			if (count($new_index) > 0)
 			{
-				$existing_index = array_merge($existing_index, $new_index);
+				$existing_index = array_merge($new_index, $existing_index);
 				$this->save_index($existing_index);
 			}
 
-            $this->opus->log->write('info', 'Downloading images from instagram with IP: ' . $_SERVER['REMOTE_ADDR']);
+            $this->opus->log->write('info', 'Instagram: Downloading images from instagram with IP: ' . $_SERVER['REMOTE_ADDR']);
 			echo count($new_index) . ' new photos were downloaded.';
 			end($existing_index);
 			echo ' <a href="' . $this->opus->url('instagram/save_images?max_id=' . key($existing_index)) . '">Get more?</a>';
@@ -171,9 +234,9 @@
 				//Image is not saved yet
 				$ch = curl_init($url);
 
-				curl_setopt($ch, CURLOPT_HEADER, false);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+				curl_setopt($ch, CURLOPT_HEADER, FALSE);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+				curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE);
 
 				$raw = curl_exec($ch);
 

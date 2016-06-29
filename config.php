@@ -152,11 +152,17 @@
 			$this->opus =& opus::$instance;
 
 			$this->image_path = $this->opus->path['absolute'] . "/assets/images/instagram/";
-			$this->user_id = '1336819';
+			$this->token_path = $this->opus->path['absolute'] . "/assets/txt/instagram_token.txt";
 			$this->no_instagram_images = 20; //From Instagram API, Max 33
-			$this->client_id = '3df4102f06814637b7f660639b409fa0';
+
+			$this->user_id = 'XXXXXX';
+			$this->client_id = 'XXXXXXXXXXXXXXXXXX';
+			$this->client_secret = 'XXXXXXXXXXXXXXXXXXXXXX';
+			$this->redirect_uri = 'http://www.example.com/instagram/save_token';
+			$this->get_code_uri = 'https://www.instagram.com/oauth/authorize/?client_id=' . $this->client_id . '&redirect_uri=' . $this->redirect_uri . '&response_type=code';
+			$this->get_access_token_uri = 'https://api.instagram.com/oauth/access_token?client_id=' . $this->client_id . '&client_secret=' . $this->client_secret . '&redirect_uri=' . $this->redirect_uri;
 			$this->media_url = 'https://api.instagram.com/v1/users/' . $this->user_id . '/media/recent?client_id=' . $this->client_id . '&count=' . $this->no_instagram_images;
-		
+
 			$this->save_small_images = TRUE;
 			$this->save_medium_images = TRUE;
 			$this->save_large_images = TRUE;
