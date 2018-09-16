@@ -1,4 +1,5 @@
 *.log
+/logs/
 *bundle_*.css
 *bundle_*.js
 cache/*
