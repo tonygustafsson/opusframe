@@ -2,477 +2,471 @@
 var mobile = false;
 
 var Ajax = {
-	url: '/',
-	responseElement: document.getElementsByTagName('article')[0],
-	handleContent: 'replace',
-	pushState: false,
-	whenDone: false,
+    url: '/',
+    responseElement: document.getElementsByTagName('article')[0],
+    handleContent: 'replace',
+    pushState: false,
+    whenDone: false,
 
-	get: function() {
-		"use strict";
+    get: function() {
+        'use strict';
 
-		var httpRequest = new XMLHttpRequest();
+        var httpRequest = new XMLHttpRequest();
 
-		httpRequest.onreadystatechange = function() {
-			if (httpRequest.readyState === 4 && httpRequest.status === 200) {
-				//Only fire when response is ready and HTTP status is OK
-				var content = httpRequest.responseText;
+        httpRequest.onreadystatechange = function() {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                //Only fire when response is ready and HTTP status is OK
+                var content = httpRequest.responseText;
 
-				switch(Ajax.handleContent) {
-					case "prepend":
-						Ajax.responseElement.innerHTML = content + Ajax.responseElement.innerHTML;
-						break;
-					case "append":
-						Ajax.responseElement.innerHTML = Ajax.responseElement.innerHTML + content;
-						break;
-					default:
-						Ajax.responseElement.innerHTML = content;
-				}
+                switch (Ajax.handleContent) {
+                    case 'prepend':
+                        Ajax.responseElement.innerHTML = content + Ajax.responseElement.innerHTML;
+                        break;
+                    case 'append':
+                        Ajax.responseElement.innerHTML = Ajax.responseElement.innerHTML + content;
+                        break;
+                    default:
+                        Ajax.responseElement.innerHTML = content;
+                }
 
-				if (Ajax.whenDone !== false && typeof Ajax.whenDone === 'function') {
-					Ajax.whenDone();
-				}
-			}
-		};
+                if (Ajax.whenDone !== false && typeof Ajax.whenDone === 'function') {
+                    Ajax.whenDone();
+                }
+            }
+        };
 
-		httpRequest.open('GET', Ajax.url);
-		httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        httpRequest.open('GET', Ajax.url);
+        httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-		if (this.pushState === true) {
-			httpRequest.addEventListener("load", function() {
-				if (Ajax.url !== window.location) {
-					window.history.pushState({id: Ajax.url}, '', Ajax.url);
-				}
-			}, false);
-		}
+        if (this.pushState === true) {
+            httpRequest.addEventListener(
+                'load',
+                function() {
+                    if (Ajax.url !== window.location) {
+                        window.history.pushState({ id: Ajax.url }, '', Ajax.url);
+                    }
+                },
+                false
+            );
+        }
 
-		httpRequest.send();
-	},
-	uploadFile: function(file, originalFileName, itemID, imageID) {
-		"use strict";
+        httpRequest.send();
+    },
+    uploadFile: function(file, originalFileName, itemID, imageID) {
+        'use strict';
 
-		var httpRequest = new XMLHttpRequest();
+        var httpRequest = new XMLHttpRequest();
 
-		httpRequest.onreadystatechange = function() {
-			var imageSrc = httpRequest.responseText,
-				thumbnail = document.getElementById('thumb_' + imageID);
-			
-			thumbnail.src = imageSrc;
-		};
+        httpRequest.onreadystatechange = function() {
+            var imageSrc = httpRequest.responseText,
+                thumbnail = document.getElementById('thumb_' + imageID);
 
-		if (httpRequest.upload)
-		{
-			httpRequest.open("POST", '/opusframe/movies/image_upload', true);
-			httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-			httpRequest.setRequestHeader('X-Original-File-Name', originalFileName);
-			httpRequest.setRequestHeader('X-Item-Id', itemID);
-			httpRequest.setRequestHeader('X-Image-Id', imageID);
-			httpRequest.send(file);
-		}
-	}
+            thumbnail.src = imageSrc;
+        };
+
+        if (httpRequest.upload) {
+            httpRequest.open('POST', '/opusframe/movies/image_upload', true);
+            httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            httpRequest.setRequestHeader('X-Original-File-Name', originalFileName);
+            httpRequest.setRequestHeader('X-Item-Id', itemID);
+            httpRequest.setRequestHeader('X-Image-Id', imageID);
+            httpRequest.send(file);
+        }
+    }
 };
 
 function ajaxPage(url) {
-	"use strict";
+    'use strict';
 
-	Ajax.url = url;
-	Ajax.responseElement = document.getElementById('main');
-	Ajax.pushState = true;
-	Ajax.get();
+    Ajax.url = url;
+    Ajax.responseElement = document.getElementById('main');
+    Ajax.pushState = true;
+    Ajax.get();
 }
 
 function isInArray(string, array) {
-	"use strict";
+    'use strict';
 
-	var i;
+    var i;
 
-	for (i = 0; i < array.length; i = i + 1)
-	{
-		if (array[i] == string)
-		{
-			return true;
-		}
-	}
+    for (i = 0; i < array.length; i = i + 1) {
+        if (array[i] == string) {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 function handleImageFileSelect(e) {
-	"use strict";
+    'use strict';
 
-	if (! window.File || ! window.FileReader || ! window.FileList || ! window.Blob)
-	{
-		return;
-	}
+    if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+        return;
+    }
 
-	var uploadImage = e.srcElement.parentNode,
-		uploadArea = uploadImage.parentNode,
-		fileInput = e.target,
-		file = fileInput.files[0],
-		itemID = uploadArea.getAttribute('data-item-id'),
-		imageID = uploadImage.getAttribute('data-image-id'),
-		outputError = document.getElementById('images_upload_error_' + imageID),
-		maxSize = uploadArea.getAttribute('data-max-size'),
-		acceptedFileTypes = fileInput.getAttribute('accept').split(', ');
+    var uploadImage = e.srcElement.parentNode,
+        uploadArea = uploadImage.parentNode,
+        fileInput = e.target,
+        file = fileInput.files[0],
+        itemID = uploadArea.getAttribute('data-item-id'),
+        imageID = uploadImage.getAttribute('data-image-id'),
+        outputError = document.getElementById('images_upload_error_' + imageID),
+        maxSize = uploadArea.getAttribute('data-max-size'),
+        acceptedFileTypes = fileInput.getAttribute('accept').split(', ');
 
-	if (!isInArray(file.type, acceptedFileTypes))
-	{
-		outputError.style.display = 'block';
-		outputError.innerHTML = 'This uploader is for images only!';
-		return;
-	}
+    if (!isInArray(file.type, acceptedFileTypes)) {
+        outputError.style.display = 'block';
+        outputError.innerHTML = 'This uploader is for images only!';
+        return;
+    }
 
-	if (file.size > maxSize)
-	{
-		outputError.style.display = 'block';
-		outputError.innerHTML = 'The images cannot be larger than ' + maxSize + ' bytes!';
-		return;
-	}
+    if (file.size > maxSize) {
+        outputError.style.display = 'block';
+        outputError.innerHTML = 'The images cannot be larger than ' + maxSize + ' bytes!';
+        return;
+    }
 
-	var reader = new FileReader(),
-		fileName = file.name,
-		thumbnail = this.parentNode.getElementsByClassName('images_upload_thumb')[0],
-		imageLoadingURL = thumbnail.getAttribute('data-image-loading-url');
+    var reader = new FileReader(),
+        fileName = file.name,
+        thumbnail = this.parentNode.getElementsByClassName('images_upload_thumb')[0],
+        imageLoadingURL = thumbnail.getAttribute('data-image-loading-url');
 
-	reader.onload = (function(theFile) {
-		return function() {
-			thumbnail.src = imageLoadingURL;
-			Ajax.uploadFile(theFile, fileName, itemID, imageID);
+    reader.onload = (function(theFile) {
+        return function() {
+            thumbnail.src = imageLoadingURL;
+            Ajax.uploadFile(theFile, fileName, itemID, imageID);
 
-			var nextImageID = parseInt(imageID, 10) + 1,
-				nextUploader = document.getElementById('images_upload_section_' + nextImageID);
+            var nextImageID = parseInt(imageID, 10) + 1,
+                nextUploader = document.getElementById('images_upload_section_' + nextImageID);
 
-			if (nextUploader !== null)
-			{
-				nextUploader.className = 'image_upload';
-			}
-		};
-	})(file);
+            if (nextUploader !== null) {
+                nextUploader.className = 'image_upload';
+            }
+        };
+    })(file);
 
-	// Read in the image file as a data URL
-	reader.readAsDataURL(file);
+    // Read in the image file as a data URL
+    reader.readAsDataURL(file);
 }
 
 function loadModalPrevImage() {
-	"use strict";
+    'use strict';
 
-	var modal = document.getElementById('modal'),
-		modalImages = document.querySelectorAll('.modal-trigger'),
-		lastId = modalImages[modalImages.length - 1].parentNode.lastElementChild.id,
-		prevImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) - 1),
-		prevImage;
+    var modal = document.getElementById('modal'),
+        modalImages = document.querySelectorAll('.modal-trigger'),
+        lastId = modalImages[modalImages.length - 1].parentNode.lastElementChild.id,
+        prevImageId = 'thumb_' + (parseInt(modal.getAttribute('data-current-image'), 0) - 1),
+        prevImage;
 
-	if (document.getElementById(prevImageId)) {
-		prevImage = document.getElementById(prevImageId).getElementsByTagName('img')[0];
-	}
-	else {
-		prevImage = document.getElementById(lastId).getElementsByTagName('img')[0];
-	}
+    if (document.getElementById(prevImageId)) {
+        prevImage = document.getElementById(prevImageId).getElementsByTagName('img')[0];
+    } else {
+        prevImage = document.getElementById(lastId).getElementsByTagName('img')[0];
+    }
 
-	modal.click(); //Remove old modal
-	prevImage.click(); //Create new one
+    modal.click(); //Remove old modal
+    prevImage.click(); //Create new one
 }
 
 function loadModalNextImage() {
-	"use strict";
+    'use strict';
 
-	var modal = document.getElementById('modal'),
-		firstId = "thumb_0",
-		nextImageId = "thumb_" + (parseInt(modal.getAttribute('data-current-image'), 0) + 1),
-		nextImage;
+    var modal = document.getElementById('modal'),
+        firstId = 'thumb_0',
+        nextImageId = 'thumb_' + (parseInt(modal.getAttribute('data-current-image'), 0) + 1),
+        nextImage;
 
-	if (document.getElementById(nextImageId)) {
-		nextImage = document.getElementById(nextImageId).getElementsByTagName('img')[0];
-	}
-	else {
-		nextImage = document.getElementById(firstId).getElementsByTagName('img')[0];
-	}
+    if (document.getElementById(nextImageId)) {
+        nextImage = document.getElementById(nextImageId).getElementsByTagName('img')[0];
+    } else {
+        nextImage = document.getElementById(firstId).getElementsByTagName('img')[0];
+    }
 
-	modal.click(); //Remove old modal
-	nextImage.click(); //Create new one
+    modal.click(); //Remove old modal
+    nextImage.click(); //Create new one
 }
 
 function createModalImage(currentImage) {
-	"use strict";
+    'use strict';
 
-	function getImagePosition(lookFor) {
-		var modalImages = document.querySelectorAll('.modal-trigger'),
-		i;
+    function getImagePosition(lookFor) {
+        var modalImages = document.querySelectorAll('.modal-trigger'),
+            i;
 
-		for (i = 0; i < modalImages.length; i = i + 1) {
-			if (modalImages[i] === lookFor) {
-				return i;
-			}
-		}
-	}
+        for (i = 0; i < modalImages.length; i = i + 1) {
+            if (modalImages[i] === lookFor) {
+                return i;
+            }
+        }
+    }
 
-	currentImage.id = "thumb_" + getImagePosition(currentImage);
+    currentImage.id = 'thumb_' + getImagePosition(currentImage);
 
-	currentImage.addEventListener('click', function(e) {
-		e.preventDefault();
+    currentImage.addEventListener('click', function(e) {
+        e.preventDefault();
 
-		var modal = document.createElement('div'),
-			body = document.getElementsByTagName('body')[0],
-			closeButton = document.createElement('div'),
-			modalImage = document.createElement('img'),
-			imageTitle = document.createElement('p'),
-			prevButton = document.createElement('div'),
-			nextButton = document.createElement('div');
+        var modal = document.createElement('div'),
+            body = document.getElementsByTagName('body')[0],
+            closeButton = document.createElement('div'),
+            modalImage = document.createElement('img'),
+            imageTitle = document.createElement('p'),
+            prevButton = document.createElement('div'),
+            nextButton = document.createElement('div');
 
-		modalImage.src = this.getAttribute('href');
-		modal.className = 'modal';
-		modal.id = 'modal';
-		modal.setAttribute('data-current-image', getImagePosition(currentImage));
-		closeButton.className = 'modal-button close-button';
-		closeButton.innerHTML = "x";
-		imageTitle.innerHTML = this.getElementsByTagName('p')[0].innerHTML;
-		prevButton.id = "modalPrevButton";
-		prevButton.className = 'modal-button prev-button';
-		prevButton.innerHTML = "&laquo;";
-		nextButton.id = "modalNextButton";
-		nextButton.className = 'modal-button next-button';
-		nextButton.innerHTML = "&raquo;";
-		imageTitle.className = 'image-title';
+        modalImage.src = this.getAttribute('href');
+        modal.className = 'modal';
+        modal.id = 'modal';
+        modal.setAttribute('data-current-image', getImagePosition(currentImage));
+        closeButton.className = 'modal-button close-button';
+        closeButton.innerHTML = 'x';
+        imageTitle.innerHTML = this.getElementsByTagName('p')[0].innerHTML;
+        prevButton.id = 'modalPrevButton';
+        prevButton.className = 'modal-button prev-button';
+        prevButton.innerHTML = '&laquo;';
+        nextButton.id = 'modalNextButton';
+        nextButton.className = 'modal-button next-button';
+        nextButton.innerHTML = '&raquo;';
+        imageTitle.className = 'image-title';
 
-		modal.appendChild(closeButton);
-		modal.appendChild(prevButton);
-		modal.appendChild(nextButton);
-		body.appendChild(modal);
+        modal.appendChild(closeButton);
+        modal.appendChild(prevButton);
+        modal.appendChild(nextButton);
+        body.appendChild(modal);
 
-		prevButton.addEventListener("click", function(e) {
-			e.preventDefault();
-			e.stopPropagation();
-			
-			loadModalPrevImage();
-		});
+        prevButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-		nextButton.addEventListener("click", function(e) {
-			e.stopPropagation(); /* Don't close modal */
-			
-			loadModalNextImage();
-		});
+            loadModalPrevImage();
+        });
 
-		modalImage.addEventListener('click', function(e) {
-			e.stopPropagation(); /* Don't close modal */
-		});
+        nextButton.addEventListener('click', function(e) {
+            e.stopPropagation(); /* Don't close modal */
 
-		imageTitle.addEventListener('click', function(e) {
-			e.stopPropagation(); /* Don't close modal */
-		});
+            loadModalNextImage();
+        });
 
-		modalImage.addEventListener('load', function(e) {
-			e.preventDefault();
-			e.stopPropagation();
+        modalImage.addEventListener('click', function(e) {
+            e.stopPropagation(); /* Don't close modal */
+        });
 
-			modal.appendChild(imageTitle);
-			modal.appendChild(modalImage);
+        imageTitle.addEventListener('click', function(e) {
+            e.stopPropagation(); /* Don't close modal */
+        });
 
-			var modalImagePos = this.getBoundingClientRect();
-			imageTitle.style.left = modalImagePos.left + 'px';
-			imageTitle.style.top = modalImagePos.top + 'px';
-			imageTitle.style.width = modalImagePos.width + 'px';
+        modalImage.addEventListener('load', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-			prevButton.style.left = (modalImagePos.left - 60) + 'px';
-			prevButton.style.display = "block";
-			nextButton.style.left = (modalImagePos.left + modalImagePos.width + 6) + 'px';
-			nextButton.style.display = "block";
+            modal.appendChild(imageTitle);
+            modal.appendChild(modalImage);
 
-			modalImage.style.opacity = 1; /* Show fading image */
-		});
+            var modalImagePos = this.getBoundingClientRect();
+            imageTitle.style.left = modalImagePos.left + 'px';
+            imageTitle.style.top = modalImagePos.top + 'px';
+            imageTitle.style.width = modalImagePos.width + 'px';
 
-		modal.addEventListener('click', function() {
-			body.removeChild(modal);
-			modal = null;
-		});
-	});
+            prevButton.style.left = modalImagePos.left - 60 + 'px';
+            prevButton.style.display = 'block';
+            nextButton.style.left = modalImagePos.left + modalImagePos.width + 6 + 'px';
+            nextButton.style.display = 'block';
+
+            modalImage.style.opacity = 1; /* Show fading image */
+        });
+
+        modal.addEventListener('click', function() {
+            body.removeChild(modal);
+            modal = null;
+        });
+    });
 }
 
 function createModalImages() {
-	"use strict";
+    'use strict';
 
-	if (!mobile) {
-		var i,
-			modalImages = document.querySelectorAll('.modal-trigger'),
-			currentImage;
+    if (!mobile) {
+        var i,
+            modalImages = document.querySelectorAll('.modal-trigger'),
+            currentImage;
 
-		for (i = 0; i < modalImages.length; i = i + 1) {
-			currentImage = modalImages[i];
-			createModalImage(currentImage);
-		}
-	}
+        for (i = 0; i < modalImages.length; i = i + 1) {
+            currentImage = modalImages[i];
+            createModalImage(currentImage);
+        }
+    }
 }
 
 function continuous_scroll(contentRoot) {
-	"use strict";
+    'use strict';
 
-	var dataOffset = 'data-offset',
-		baseUrl = contentRoot.getAttribute('data-ajax-url'),
-		count = contentRoot.getAttribute('data-count'),
-		needsScrolling = document.getElementsByTagName('body')[0].innerHeight > window.innerHeight;
+    var dataOffset = 'data-offset',
+        baseUrl = contentRoot.getAttribute('data-ajax-url'),
+        count = contentRoot.getAttribute('data-count'),
+        needsScrolling = document.getElementsByTagName('body')[0].innerHeight > window.innerHeight;
 
-	//Set an offset for next request
-	contentRoot.setAttribute(dataOffset, count);
+    //Set an offset for next request
+    contentRoot.setAttribute(dataOffset, count);
 
-	function getMoreContent() {
-		var url = baseUrl + '?count=' + count + '&offset=' + contentRoot.getAttribute(dataOffset);
+    function getMoreContent() {
+        var url = baseUrl + '?count=' + count + '&offset=' + contentRoot.getAttribute(dataOffset);
 
-		//Get images through AJAX, make them modal images
-		Ajax.url = url;
-		Ajax.responseElement = contentRoot;
-		Ajax.handleContent = "append";
-		Ajax.whenDone = createModalImages;
-		Ajax.get();
+        //Get images through AJAX, make them modal images
+        Ajax.url = url;
+        Ajax.responseElement = contentRoot;
+        Ajax.handleContent = 'append';
+        Ajax.whenDone = createModalImages;
+        Ajax.get();
 
-		//Change the offset so we won't load the same images again
-		contentRoot.setAttribute(dataOffset, parseInt(contentRoot.getAttribute(dataOffset), 10) + parseInt(count, 10));
-	}
+        //Change the offset so we won't load the same images again
+        contentRoot.setAttribute(dataOffset, parseInt(contentRoot.getAttribute(dataOffset), 10) + parseInt(count, 10));
+    }
 
-	if (!needsScrolling) {
-		getMoreContent();
-	}
+    if (!needsScrolling) {
+        getMoreContent();
+    }
 
-	window.addEventListener('scroll', function() {
-		//Detect if we should stop trying to fetch more images
-		var	endOfContent = document.getElementById('end-of-content'),
-			bottomIsReached = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight;
+    window.addEventListener('scroll', function() {
+        //Detect if we should stop trying to fetch more images
+        var endOfContent = document.getElementById('end-of-content'),
+            bottomIsReached = window.innerHeight + window.pageYOffset >= document.body.offsetHeight;
 
-    	if (!endOfContent && bottomIsReached) {
-    		//If bottom is reached and there is more content
-			getMoreContent();
-		}
-	});
+        if (!endOfContent && bottomIsReached) {
+            //If bottom is reached and there is more content
+            getMoreContent();
+        }
+    });
 }
 
 (function ModalImagesControl() {
-	"use strict";
+    'use strict';
 
-	document.addEventListener("keydown", function(e) {
-		var modal = document.getElementById('modal');
+    document.addEventListener('keydown', function(e) {
+        var modal = document.getElementById('modal');
 
-		if (modal === null) {
-			return;
-		}
+        if (modal === null) {
+            return;
+        }
 
-		switch(e.keyCode) {
-			case 27: //ESC
-				modal.click();
-				break;
-			case 37: //LEFT
-				loadModalPrevImage();
-				break;
-			case 39: //RIGHT
-				loadModalNextImage();
-				break;
-		}
-	});
+        switch (e.keyCode) {
+            case 27: //ESC
+                modal.click();
+                break;
+            case 37: //LEFT
+                loadModalPrevImage();
+                break;
+            case 39: //RIGHT
+                loadModalNextImage();
+                break;
+        }
+    });
 })();
 
 (function detectWindowResize() {
-	"use strict";
+    'use strict';
 
-	if (window.matchMedia) {
-		mobile = window.matchMedia("(max-width: 1090px)").matches;
-	}
+    if (window.matchMedia) {
+        mobile = window.matchMedia('(max-width: 1090px)').matches;
+    }
 
-	window.addEventListener('resize', function () {
-		if (window.matchMedia) {
-			mobile = window.matchMedia("(max-width: 1090px)").matches;
-		}
-	});
+    window.addEventListener('resize', function() {
+        if (window.matchMedia) {
+            mobile = window.matchMedia('(max-width: 1090px)').matches;
+        }
+    });
 })();
 
 (function listenForPopState() {
-	"use strict";
+    'use strict';
 
-	window.addEventListener('popstate', function() {
-		ajaxPage(location.pathname);
-	});
+    window.addEventListener('popstate', function() {
+        ajaxPage(location.pathname);
+    });
 })();
 
 (function createRanges() {
-	//Use HTML5 ranges
-	"use strict";
+    //Use HTML5 ranges
+    'use strict';
 
-	var ranges = document.querySelector('input[type=range]');
+    var ranges = document.querySelector('input[type=range]');
 
-	if (ranges) {
-		ranges.addEventListener('change', function() {
-			var rangeId = this.getAttribute('id'),
-				helperId = rangeId + '_helper',
-				range = document.getElementById(rangeId),
-				helper = document.getElementById(helperId);
+    if (ranges) {
+        ranges.addEventListener('change', function() {
+            var rangeId = this.getAttribute('id'),
+                helperId = rangeId + '_helper',
+                range = document.getElementById(rangeId),
+                helper = document.getElementById(helperId);
 
-			helper.innerHTML = range.value;
-		});
-	}
+            helper.innerHTML = range.value;
+        });
+    }
 })();
 
 (function imageUploading() {
-	"use strict";
+    'use strict';
 
-	//Add click events to image uploading thumbs
-	var imageUploadThumbs = document.getElementsByClassName('images_upload_thumb'),
-		imageUploadInputs = document.getElementsByClassName('images_upload_input'),
-		removeImagesLinks = document.getElementsByClassName('remove-image-link'),
-		i;
+    //Add click events to image uploading thumbs
+    var imageUploadThumbs = document.getElementsByClassName('images_upload_thumb'),
+        imageUploadInputs = document.getElementsByClassName('images_upload_input'),
+        removeImagesLinks = document.getElementsByClassName('remove-image-link'),
+        i;
 
-	for (i = 0; i < imageUploadThumbs.length; i = i + 1) {
-		imageUploadThumbs[i].addEventListener('click', function() {
-			var id = this.parentNode.getAttribute('data-image-id');
-			document.getElementById('images_file_upload_' + id).click();
-		});
-	}
+    for (i = 0; i < imageUploadThumbs.length; i = i + 1) {
+        imageUploadThumbs[i].addEventListener('click', function() {
+            var id = this.parentNode.getAttribute('data-image-id');
+            document.getElementById('images_file_upload_' + id).click();
+        });
+    }
 
-	//Add change event listenerer on file uploads
-	for (i = 0; i < imageUploadInputs.length; i = i + 1) {
-	    imageUploadInputs[i].addEventListener('change', handleImageFileSelect, false);
-	}
+    //Add change event listenerer on file uploads
+    for (i = 0; i < imageUploadInputs.length; i = i + 1) {
+        imageUploadInputs[i].addEventListener('change', handleImageFileSelect, false);
+    }
 
-	//Add events for removing uploaded images
-	for (i = 0; i < removeImagesLinks.length; i = i + 1) {
-	    removeImagesLinks[i].addEventListener('click', function(e) {
-	    	e.preventDefault();
+    //Add events for removing uploaded images
+    for (i = 0; i < removeImagesLinks.length; i = i + 1) {
+        removeImagesLinks[i].addEventListener('click', function(e) {
+            e.preventDefault();
 
-	    	var url = this.getAttribute('href'),
-				httpRequest = new XMLHttpRequest();
+            var url = this.getAttribute('href'),
+                httpRequest = new XMLHttpRequest();
 
-			httpRequest.onreadystatechange = function() {
-				var content = httpRequest.responseText;
-				
-				if (content === "OK") {
-					var movieID = e.srcElement.parentNode.parentNode.getAttribute('data-image-id'),
-						thumbnail = document.getElementById('thumb_' + movieID),
-						noImageURL = thumbnail.getAttribute('data-no-image-url');
+            httpRequest.onreadystatechange = function() {
+                var content = httpRequest.responseText;
 
-					thumbnail.src = noImageURL;
-				}
-			};
+                if (content === 'OK') {
+                    var movieID = e.srcElement.parentNode.parentNode.getAttribute('data-image-id'),
+                        thumbnail = document.getElementById('thumb_' + movieID),
+                        noImageURL = thumbnail.getAttribute('data-no-image-url');
 
-			httpRequest.open('GET', url);
-			httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-			httpRequest.send();
-	    });
-	}
+                    thumbnail.src = noImageURL;
+                }
+            };
+
+            httpRequest.open('GET', url);
+            httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            httpRequest.send();
+        });
+    }
 })();
 
 (function enableContinuousScrolling() {
-	//Enable continuous scrolling
-	"use strict";
+    //Enable continuous scrolling
+    'use strict';
 
-	var contentRoot = document.getElementById('image-area');
+    var contentRoot = document.getElementById('image-area');
 
-	if (contentRoot)
-	{
-		continuous_scroll(contentRoot);
-	}
+    if (contentRoot) {
+        continuous_scroll(contentRoot);
+    }
 })();
 
 (function enableModalImages() {
-	"use strict";
+    'use strict';
 
-	var modalImages = document.querySelectorAll('.modal-trigger');
+    var modalImages = document.querySelectorAll('.modal-trigger');
 
-	if (modalImages.length > 0) {
-		createModalImages();
-	}
+    if (modalImages.length > 0) {
+        createModalImages();
+    }
 })();

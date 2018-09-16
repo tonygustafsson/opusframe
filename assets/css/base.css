@@ -1,101 +1,110 @@
 @import url('http://fonts.googleapis.com/css?family=Adamina');
 
 body {
-	background: #fafafa;
-	color: #000;
-	width: 80%;
-	margin: 1em auto;
-	font-family: 'Adamina', sans-serif;
-	letter-spacing: .0;
+    background: #fafafa;
+    color: #000;
+    width: 80%;
+    margin: 1em auto;
+    font-family: 'Adamina', sans-serif;
+    letter-spacing: 0;
 }
 
 h1 {
-	padding: 1em 0;
+    padding: 1em 0;
 }
 
-h1, h2, h3, h4, h5 {
-	letter-spacing: .04em;
+h1,
+h2,
+h3,
+h4,
+h5 {
+    letter-spacing: 0.04em;
 }
 
 a {
-	color: #000;
+    color: #000;
 }
 
 table {
-	width: 100%;
+    width: 100%;
 }
 
 th {
-	text-align: left;
-	background: #f0f0f0;
-	padding: .5em;
+    text-align: left;
+    background: #f0f0f0;
+    padding: 0.5em;
 }
 
 th a {
-	text-decoration: none;
+    text-decoration: none;
 }
 
 tr:nth-child(odd) {
-	background: #f3f3f3;
+    background: #f3f3f3;
 }
 
 td {
-	padding: .5em;
+    padding: 0.5em;
 }
 
 .center {
-	text-align: center;
+    text-align: center;
 }
 
 .right {
-	text-align: right;
+    text-align: right;
 }
 
 .hidden {
-	display: none;
+    display: none;
 }
 
 .no-underline {
-	text-decoration: none;
+    text-decoration: none;
 }
 
 label {
-	display: block;
-	font-weight: bold;
-	padding-top: 1em;
+    display: block;
+    font-weight: bold;
+    padding-top: 1em;
 }
 
 label:after {
-	content: ":";
+    content: ':';
 }
 
-input[type=text], input[type=email], input[type=url], input[type=password] {
-	width: 400px;
-	padding: .5em;
+input[type='text'],
+input[type='email'],
+input[type='url'],
+input[type='password'] {
+    width: 400px;
+    padding: 0.5em;
 }
 
-input[type=radio], input[type=checkbox] {
-	margin-left: 1em;
+input[type='radio'],
+input[type='checkbox'] {
+    margin-left: 1em;
 }
 
-input[type=number], input[type=date] {
-	width: 200px;
-	padding: .5em;
+input[type='number'],
+input[type='date'] {
+    width: 200px;
+    padding: 0.5em;
 }
 
-input[type=submit] {
-	padding: 1em;
-	text-transform: uppercase;
-	display: block;
-	margin-top: 1em;
+input[type='submit'] {
+    padding: 1em;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 1em;
 }
 
-input[type=file] {
-	display: none;
+input[type='file'] {
+    display: none;
 }
 
 footer p {
-	text-align: right;
-	font-style: italic;
-	padding: 2em 0;
+    text-align: right;
+    font-style: italic;
+    padding: 2em 0;
 }
